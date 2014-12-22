@@ -12,8 +12,8 @@ if 'REDISCLOUD_URL' in os.environ and 'REDISCLOUD_PORT' in os.environ and 'REDIS
     packages.append('django-redis-cache')
     packages.append('hiredis')
 
-setup(name='YourAppName', version='1.0',
-      description='OpenShift Python-3.3 / Django-1.6 Community Cartridge based application',
-      author='Your Name', author_email='admin@example.org',
+setup(name='BGO', version='1.0',
+      description='Build.gnome.org replacement',
+      author='Vadim Rutkovsky', author_email='vrutkovs@redhat.com',
       url='https://pypi.python.org/pypi',
       install_requires=packages,)

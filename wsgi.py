@@ -4,7 +4,7 @@ import imp
 import sys
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-sys.path.append(os.path.join('wsgi', 'openshift'))
+sys.path.append(os.path.join('wsgi', 'bgo'))
 
 if __name__ == '__main__':
     ip = 'localhost'
