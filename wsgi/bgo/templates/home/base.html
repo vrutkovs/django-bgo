@@ -1,0 +1,34 @@
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% bootstrap_css %}
+{# bootstrap_javascript #}
+<link href='{% static "bgo/sidebar.css" %}' rel="stylesheet">
+
+
+<div id='wrapper'>
+    <div id="sidebar-wrapper">
+    {% block sidebar %}
+        {% if buildslist %}
+            <ul class="sidebar-nav nav-stacked nav-pills">
+                <li class="sidebar-brand"><a href="#">Builds</a></li>
+            {% for tmp_build in buildslist %}
+                {% if build and build.id == tmp_build.id %}
+                <li class="active">
+                {% else %}
+                <li class="">
+                {% endif %}
+                    <a href="/{{ tmp_build.name }}/">{{ tmp_build.name }}</a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No builds are available.</p>
+        {% endif %}
+    {% endblock %}
+    </div>
+
+    <div id="page-content-wrapper">
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>

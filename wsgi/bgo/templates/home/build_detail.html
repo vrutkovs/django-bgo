@@ -1,13 +1,10 @@
-<html>
-    <head>
-        <title>Build {{ build.name }}</title
-    </head>
-    <body>
-        Details for build <b>'{{ build.name }}'</b>:
-        <ul>
-        {% for test in object_list %}
-            <li><a href="/{{ build.name }}/{{ test.name }}">{{ test.name }}</a></li>
-        {% endfor %}
-        </ul>
-    </body>
-</html>
+{% extends "home/base.html" %}
+
+{% block content %}
+Details for build <b>'{{ build.name }}'</b>:
+<ul>
+{% for test in object_list %}
+    <li><a href="/{{ build.name }}/{{ test.name }}">{{ test.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

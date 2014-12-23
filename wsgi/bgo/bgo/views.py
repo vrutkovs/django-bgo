@@ -36,7 +36,8 @@ def create_test_for_build(testname, url):
         str_response = response.readall().decode('utf-8')
         obj = json.loads(str_response)
         complete = obj['complete']
-        assert complete is True, "test is incomplete"
+        if not complete:
+            return
         if obj['success'] is True:
             success = Results.PASSED
         else:
@@ -211,11 +212,13 @@ class BuildDetailView(generic.ListView):
 
     def get_queryset(self):
         self.build = get_object_or_404(Build, name=self.args[0])
+        self.buildslist = Build.objects.filter(test__isnull=False).distinct()
         return Test.objects.filter(build=self.build)
 
     def get_context_data(self, **kwargs):
         context = super(BuildDetailView, self).get_context_data(**kwargs)
         context['build'] = self.build
+        context['buildslist'] = self.buildslist
         return context
 
 
@@ -223,12 +226,14 @@ class TestDetailView(generic.ListView):
     template_name = 'home/test_detail.html'
 
     def get_queryset(self):
+        self.buildslist = Build.objects.filter(test__isnull=False).distinct()
         self.build = get_object_or_404(Build, name=self.args[0])
         self.test = get_object_or_404(Test, build=self.build, name=self.args[1])
         return TestResult.objects.filter(test=self.test)
 
     def get_context_data(self, **kwargs):
         context = super(TestDetailView, self).get_context_data(**kwargs)
+        context['buildslist'] = self.buildslist
         context['build'] = self.build
         context['test'] = self.test
         return context
