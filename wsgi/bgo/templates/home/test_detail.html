@@ -1,7 +1,8 @@
 {% extends "home/base.html" %}
 
 {% block content %}
-    Details for build <b>'{{ build.name }}'</b>, test <i>{{ test.name }}'</i>:
+    <h2>Build {{ build.name }}</h2>
+    <i>{{ test.name }}</i>:
     <ul>
     {% for result in object_list %}
         <li>{{ result.name }}: {{ result.result }}</li>
