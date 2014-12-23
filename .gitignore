@@ -6,6 +6,7 @@
 *.log
 *.egg-info
 *.py.disabled
+*.sqlite3-journal
 .project
 .pydevproject
 venv/

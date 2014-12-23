@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Builds</title
+    </head>
+    <body>
+        {% if buildslist %}
+        <ul>
+        {% for build in buildslist %}
+            <li><a href="/{{ build.name }}/">{{ build.name }}</a></li>
+        {% endfor %}
+        </ul>
+        {% else %}
+            <p>No builds are available.</p>
+        {% endif %}
+    </body>
+</html>

@@ -11,7 +11,6 @@ class Results:
 class Build(models.Model):
     name = models.CharField(max_length=200)
     start_date = models.DateTimeField()
-    tests_were_parsed = models.BooleanField(default=False)
 
 
 class Test(models.Model):
@@ -21,7 +20,6 @@ class Test(models.Model):
     duration = models.IntegerField(default=0)
     results = models.IntegerField(default=Results.NOTSTARTED)
     screenshot = models.URLField(max_length=200)
-    test_results_were_parsed = models.BooleanField(default=False)
 
 
 class TestResult(models.Model):

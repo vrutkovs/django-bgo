@@ -1,0 +1,13 @@
+<html>
+    <head>
+        <title>Build {{ build.name }}, test {{ test.name }}</title>
+    </head>
+    <body>
+        Details for build <b>'{{ build.name }}'</b>, test <i>{{ test.name }}'</i>:
+        <ul>
+        {% for result in object_list %}
+            <li>{{ result.name }}: {{ result.result }}</li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>
