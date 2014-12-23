@@ -1,0 +1,19 @@
+{% extends "home/base.html" %}
+
+{% block content %}
+    <h2>Test history for {{ testname }} in {{ testcomponent}}</h2>
+    <ul class="list-group" style="width:200px">
+    {% for testresult in object_list %}
+        <li class="list-group-item">
+            <a href='/{{ testresult.test.build.name }}'> {{ testresult.test.build.name }}</a>
+            {% if testresult.result == 1 %}
+                <span class="badge list-group-item-success">PASS</span>
+            {% elif testresult.result == 3 %}
+                <span class="badge list-group-item-info">SKIP</span>
+            {% else %}
+                <span class="badge list-group-item-warning">FAIL</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

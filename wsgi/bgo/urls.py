@@ -13,4 +13,5 @@ urlpatterns = patterns(
     url(r'^$', views.BuildsListView.as_view(), name='build_list'),
     url(r'^([\d\.]+?)/$', views.BuildDetailView.as_view(), name='build_detail'),
     url(r'^([\d\.]+?)/(\w+)/$', views.TestDetailView.as_view(), name='test_detail'),
+    url(r'^test/(\d+)/$', views.TestHistoryView.as_view(), name='test_history'),
 )

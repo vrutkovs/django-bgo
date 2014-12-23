@@ -91,7 +91,7 @@ def add_new_build(url):
     print('build name: %s' % build_name)
     start_date = datetime.datetime(year, month, day)
     print('start date: %s' % start_date)
-    b, created = Build.objects.get_or_create(name=build_name, start_date=start_date)
+    b, created = Build.objects.get_or_create(name=build_name, start_date=start_date, build_no=build_no)
     print("Build created")
 
 
@@ -198,13 +198,17 @@ def sync_test(request, year, month, day, build_no, test_name):
                               {'state': state, 'target': "build %s test %s" % (buildname, test_name)})
 
 
+def get_buildlist():
+    return Build.objects.filter(test__isnull=False).distinct().order_by('-start_date', '-build_no')
+
+
 class BuildsListView(generic.ListView):
     template_name = 'home/build_list.html'
     context_object_name = 'buildslist'
     model = Build
 
     def get_queryset(self):
-        return Build.objects.filter(test__isnull=False).distinct()
+        return get_buildlist()
 
 
 class BuildDetailView(generic.ListView):
@@ -212,7 +216,7 @@ class BuildDetailView(generic.ListView):
 
     def get_queryset(self):
         self.build = get_object_or_404(Build, name=self.args[0])
-        self.buildslist = Build.objects.filter(test__isnull=False).distinct()
+        self.buildslist = get_buildlist()
         return Test.objects.filter(build=self.build)
 
     def get_context_data(self, **kwargs):
@@ -226,14 +230,33 @@ class TestDetailView(generic.ListView):
     template_name = 'home/test_detail.html'
 
     def get_queryset(self):
-        self.buildslist = Build.objects.filter(test__isnull=False).distinct()
+        self.buildslist = get_buildlist()
         self.build = get_object_or_404(Build, name=self.args[0])
         self.test = get_object_or_404(Test, build=self.build, name=self.args[1])
-        return TestResult.objects.filter(test=self.test)
+        return TestResult.objects.filter(test=self.test).order_by('component')
 
     def get_context_data(self, **kwargs):
         context = super(TestDetailView, self).get_context_data(**kwargs)
         context['buildslist'] = self.buildslist
         context['build'] = self.build
         context['test'] = self.test
+        return context
+
+
+class TestHistoryView(generic.ListView):
+    template_name = 'home/test_history.html'
+
+    def get_queryset(self):
+        self.test = get_object_or_404(TestResult, id=self.args[0])
+        self.testname = self.test.name
+        self.testcomponent = self.test.component
+        return TestResult.objects.filter(name=self.testname, component=self.testcomponent).\
+            order_by('-test__start_date', '-test__build__build_no')
+
+    def get_context_data(self, **kwargs):
+        self.buildslist = get_buildlist()
+        context = super(TestHistoryView, self).get_context_data(**kwargs)
+        context['buildslist'] = self.buildslist
+        context['testname'] = self.testname
+        context['testcomponent'] = self.testcomponent
         return context

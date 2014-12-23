@@ -3,9 +3,33 @@
 {% block content %}
     <h2>Build {{ build.name }}</h2>
     <i>{{ test.name }}</i>:
-    <ul>
-    {% for result in object_list %}
-        <li>{{ result.name }}: {{ result.result }}</li>
+    {% regroup object_list by component as results_list %}
+    <div class="panel-group" role="tablist" style="width:500px">
+    {% for component in results_list %}
+        <div class='panel panel-default'>
+            <div id="{{ component.grouper }}" class="panel-heading" role="tab">
+                    {{ component.grouper }}
+                    <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#group{{ component.grouper }}" aria-expanded="false" aria-controls="group{{ component.grouper }}" data-toggle="collapse">
+                    </a>
+            </div>
+            <div id='group{{ component.grouper }}' class="panel-collapse collapse in"
+                aria-labelledby='{{ component.grouper }}' role='tabpanel' aria-expanded="false">
+                <ul class="list-group">
+                {% for result in component.list %}
+                    <li class="list-group-item">
+                        <a href='/test/{{ result.id }}'> {{ result.name }}</a>
+                        {% if result.result == 1 %}
+                            <span class="badge list-group-item-success">PASS</span>
+                        {% elif result.result == 3 %}
+                            <span class="badge list-group-item-info">SKIP</span>
+                        {% else %}
+                            <span class="badge list-group-item-warning">FAIL</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
     {% endfor %}
-    </ul>
+    </div>
 {% endblock %}
