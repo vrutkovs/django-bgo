@@ -7,6 +7,7 @@ import os
 # for the specific client drivers/modules your application needs.
 packages = ['Django<=1.6',
             'static3',
+            'django_pdb',
             'django-bootstrap3']
 
 if 'REDISCLOUD_URL' in os.environ and 'REDISCLOUD_PORT' in os.environ and 'REDISCLOUD_PASSWORD' in os.environ:

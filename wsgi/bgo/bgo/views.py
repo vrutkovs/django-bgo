@@ -23,7 +23,7 @@ def fetch_tests_for_build(url):
 def is_test_exists(url, testname):
     if is_build_exists(url):
         build_info = get_build_info_from_url(url)
-        build_name = '%s%s%s.%s' % build_info
+        build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(*build_info)
         return Test.objects.filter(build__name__iexact=build_name, name__iexact=testname)
     else:
         return False
@@ -45,7 +45,7 @@ def create_test_for_build(testname, url):
         duration = obj['elapsedMillis']
 
         build_info = get_build_info_from_url(url)
-        build_name = '%s%s%s.%s' % build_info
+        build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(*build_info)
         build = Build.objects.filter(name__iexact=build_name)[0]
         start_date = datetime.datetime(build_info[0], build_info[1], build_info[2])
 
@@ -77,7 +77,7 @@ def is_build_exists(url):
     (year, month, day, build_no) = get_build_info_from_url(url)
 
     if year is not None:
-        build_name = '%s%s%s.%s' % (year, month, day, build_no)
+        build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
         return len(Build.objects.filter(name__iexact=build_name)) > 0
     else:
         return False
@@ -87,7 +87,7 @@ def add_new_build(url):
     print("add_new_build(%s)" % url)
 
     (year, month, day, build_no) = get_build_info_from_url(url)
-    build_name = '%s%s%s.%s' % (year, month, day, build_no)
+    build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
     print('build name: %s' % build_name)
     start_date = datetime.datetime(year, month, day)
     print('start date: %s' % start_date)
@@ -133,7 +133,7 @@ def get_sub_dirs(url):
 def add_new_installed_test(url):
     print("add_new_installed_test(%s)" % url)
     build_info = get_build_info_from_url(url)
-    build_name = '%s%s%s.%s' % build_info
+    build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(*build_info)
     test = Test.objects.filter(build__name__iexact=build_name, name__iexact='integrationtest')[0]
     try:
         response = urllib.request.urlopen("%s/integrationtest/installed-test-results.json" % url)
@@ -168,7 +168,7 @@ def sync_buildlist(request):
 
 
 def sync_build(request, year, month, day, build_no):
-    buildname = "%s%s%s.%s" % (year, month, day, build_no)
+    buildname = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
     state = "success"
 
     print("Syncing build '%s'" % buildname)
@@ -184,7 +184,7 @@ def sync_build(request, year, month, day, build_no):
 
 
 def sync_test(request, year, month, day, build_no, test_name):
-    buildname = "%s%s%s.%s" % (year, month, day, build_no)
+    buildname = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
     print("Syncing test '%s' from build %s" % (test_name, buildname))
     state = "success"
 
@@ -233,7 +233,9 @@ class TestDetailView(generic.ListView):
         self.buildslist = get_buildlist()
         self.build = get_object_or_404(Build, name=self.args[0])
         self.test = get_object_or_404(Test, build=self.build, name=self.args[1])
-        return TestResult.objects.filter(test=self.test).order_by('component')
+
+        testresult_filter = TestResult.objects.filter(test=self.test)
+        return testresult_filter.order_by('component')
 
     def get_context_data(self, **kwargs):
         context = super(TestDetailView, self).get_context_data(**kwargs)
