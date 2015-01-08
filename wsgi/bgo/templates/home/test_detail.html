@@ -10,7 +10,7 @@
                 <div class='panel panel-default'>
                     <div id="{{ component.grouper }}" class="panel-heading" role="tab">
                             {{ component.grouper }}
-                            <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#group{{ component.grouper }}" aria-expanded="false" aria-controls="group{{ component.grouper }}" data-toggle="collapse">
+                            <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#group{{component.grouper|slugify}}" aria-expanded="false" aria-controls="group{{ component.grouper|slugify }}" data-toggle="collapse">
                             </a>
                             {% regroup component.list|dictsort:"result" by result as component_stats %}
                             <span class='pull-right'>
@@ -25,19 +25,23 @@
                                 {% endfor %}
                             </span>
                     </div>
-                    <div id='group{{ component.grouper }}' class="panel-collapse collapse"
-                        aria-labelledby='{{ component.grouper }}' role='tabpanel' aria-expanded="false">
+                    <div id='group{{ component.grouper|slugify }}' class="panel-collapse collapse"
+                        aria-labelledby='{{ component.grouper|slugify }}' role='tabpanel' aria-expanded="false">
                         <ul class="list-group">
-                        {% for result in component.list %}
+                        {% for result in component.list|dictsortreversed:"result" %}
                             <li class="list-group-item">
-                                <a href='/test/{{ result.id }}'> {{ result.name }}</a>
+                                <a href='/test/{{ result.id }}' class='glyphicon glyphicon-stats pull-right' role='button'>
+                                </a>
                                 {% if result.result == 1 %}
-                                    <span class="badge list-group-item-success">PASS</span>
+                                    <span class="text-success">{{ result.name }}</span>
                                 {% elif result.result == 3 %}
-                                    <span class="badge list-group-item-info">SKIP</span>
+                                    <span class="text-muted">{{ result.name }}</span>
                                 {% else %}
-                                    <span class="badge list-group-item-danger">FAIL</span>
+                                    <a href='{{ result.build_artifacts_url}}' class='glyphicon glyphicon-exclamation-sign'>
+                                    </a>
+                                    <span class="text-danger">{{ result.name }}</span>
                                 {% endif %}
+                                
                             </li>
                         {% endfor %}
                         </ul>

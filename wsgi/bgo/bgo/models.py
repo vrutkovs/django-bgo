@@ -28,3 +28,15 @@ class TestResult(models.Model):
     name = models.CharField(max_length=200)
     component = models.CharField(max_length=200)
     result = models.IntegerField(default=Results.NOTSTARTED)
+
+    def build_artifacts_url(self):
+        root = 'http://build.gnome.org/continuous/buildmaster/builds'
+        build = self.test.build
+        result = '{0}/{1:4}/{2:02}/{3:02}/{4:02}'.format(
+            root, build.start_date.year, build.start_date.month,
+            build.start_date.day, build.build_no)
+        if self.test.name == 'integrationtest':
+            result = '%s/%s/work-gnome-continuous-x86_64-runtime/installed-test-results/' % (
+                result, self.test.name)
+            result = '%s/%s_%s' % (result, self.component, self.name)
+        return result
