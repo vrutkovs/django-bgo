@@ -285,3 +285,44 @@ class TestHistoryView(generic.ListView):
         context['testname'] = self.testname
         context['testcomponent'] = self.testcomponent
         return context
+
+
+class ComponentList(generic.ListView):
+    template_name = 'home/components.html'
+
+    def get_queryset(self):
+        self.components = sorted(TestResult.objects.values_list('component', flat=True).distinct())
+        return []
+
+    def get_context_data(self, **kwargs):
+        context = super(ComponentList, self).get_context_data(**kwargs)
+        context['buildslist'] = get_buildlist()
+        context['components'] = self.components
+        return context
+
+
+class ComponentDetailView(generic.ListView):
+    template_name = 'home/component_details.html'
+
+    def get_queryset(self):
+        self.component = self.args[0]
+        self.testresults = TestResult.objects.filter(component=self.component).\
+            order_by('-test__start_date', 'test__build__build_no')
+        buildresults = self.testresults.values_list('test__build__name', 'result')
+        self.builds = []
+        for x in buildresults:
+            self.builds.append({'name': x[0]})
+
+        for build in self.builds:
+            build_results = [x[1] for x in buildresults if x[0] == build['name']]
+            build['passed'] = build_results.count(1)
+            build['failed'] = build_results.count(2)
+            build['skipped'] = build_results.count(3)
+        return []
+
+    def get_context_data(self, **kwargs):
+        context = super(ComponentDetailView, self).get_context_data(**kwargs)
+        context['buildslist'] = get_buildlist()
+        context['builds'] = self.builds
+        context['component'] = self.component
+        return context
