@@ -2,9 +2,25 @@
 
 {% block content %}
 <h2> Build {{ build.name }}</h2>
-<ul>
+<div class="row container">
 {% for test in object_list %}
-    <li><a href="/{{ build.name }}/{{ test.name }}">{{ test.name }}</a></li>
+    <div class='panel panel-default'>
+        <div class='panel-heading'>
+            <a href="/{{ build.name }}/{{ test.name }}">{{ test.name }}</a>
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item">
+                Passed <span class="badge list-group-item-success">{{ test.passed }}</span>
+            </li>
+            <li class="list-group-item">
+                Skipped <span class="badge list-group-item-info">{{ test.skipped }}</span>
+            </li>
+            <li class="list-group-item">
+                Failed <span class="badge list-group-item-danger">{{ test.failed }}</span>
+            </li>
+        </ul>
+        <div class="panel-footer">Total <span class="badge pull-right"> {{ test.total }}</span></div>
+    </div>
 {% endfor %}
-</ul>
+</div>
 {% endblock %}

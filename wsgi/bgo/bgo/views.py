@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
 from django.db import transaction
 from django.views import generic
+from django.db.models import Count
 
 import urllib.request
 import json
@@ -217,7 +218,29 @@ class BuildDetailView(generic.ListView):
     def get_queryset(self):
         self.build = get_object_or_404(Build, name=self.args[0])
         self.buildslist = get_buildlist()
-        return Test.objects.filter(build=self.build)
+        self.tests = Test.objects.filter(build=self.build)
+
+        self.tests = self.tests.annotate(total=Count('testresult__result'))
+        # Magic trick to calculate passed/failed/skipped as Django doesn't like filtering
+        results = TestResult.objects.all().filter(test__in=self.tests)
+        results = results.values('test', 'result').annotate(abs=Count('pk'))
+        for test in self.tests:
+            try:
+                test.passed = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == 1][0]
+            except:
+                pass
+
+            try:
+                test.failed = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == 2][0]
+            except:
+                pass
+
+            try:
+                test.skipped = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == 3][0]
+            except:
+                pass
+
+        return self.tests
 
     def get_context_data(self, **kwargs):
         context = super(BuildDetailView, self).get_context_data(**kwargs)
