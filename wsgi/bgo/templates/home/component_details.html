@@ -1,0 +1,39 @@
+{% extends "home/base.html" %}
+
+{% block content %}
+
+<h2> {{ component }}</h2>
+
+<div class="container row">
+    <div class="col-md-4">
+        <ul class="list-group">
+        {% for build in builds %}
+            <li class="list-group-item">
+                <a href="/{{ build.name }}/">{{ build.name }}</a>
+                {% if build.passed > 0 %} 
+                    <span class="badge list-group-item-success">{{ build.passed }}</span>
+                {% endif %}
+
+                {% if build.skipped > 0 %}
+                    <span class="badge list-group-item-info">{{ build.skipped }}</span>
+                {% endif %}
+
+                {% if build.failed > 0 %}
+                    <span class="badge list-group-item-danger">{{ build.failed }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    <div class="col-md-4">
+        <div class='panel panel-default'>
+            <div class="panel-heading" role="tab">Test Results</div>
+            <div class="panel-body" role="tab">
+                Graph goes here
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

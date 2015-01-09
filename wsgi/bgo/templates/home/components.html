@@ -1,0 +1,16 @@
+{% extends "home/base.html" %}
+
+{% block content %}
+
+<div class="panel panel-default" role="tablist" style="width:200px">
+    <div class="panel-heading" role="tab">Components</div>
+    <ul class="list-group">
+    {% for component in components %}
+        <li class="list-group-item">
+        <a href='{{ component }}'>{{component}}</a>
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}
