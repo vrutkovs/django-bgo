@@ -12,9 +12,7 @@ def get_buildlist():
 
 
 def sync_buildlist(request):
-    bgo_url = settings.BGO_URL
-
-    state = sync.get_sub_dirs('%s/builds' % bgo_url)
+    state = sync.get_sub_dirs('%s/builds' % settings.BGO_URL)
 
     return render_to_response('home/syncstatus.html',
                               {'state': state, 'target': "builds list"})
@@ -25,8 +23,7 @@ def sync_build(request, year, month, day, build_no):
     state = "success"
 
     print("Syncing build '%s'" % buildname)
-    bgo_url = settings.BGO_URL
-    build_url = "%s/builds/%s/%s/%s/%s" % (bgo_url, year, month, day, build_no)
+    build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
     if not sync.is_build_exists(build_url):
         state = "no such build"
     else:
@@ -41,8 +38,7 @@ def sync_test(request, year, month, day, build_no, test_name):
     print("Syncing test '%s' from build %s" % (test_name, buildname))
     state = "success"
 
-    bgo_url = settings.BGO_URL
-    build_url = "%s/builds/%s/%s/%s/%s" % (bgo_url, year, month, day, build_no)
+    build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
     if not sync.is_test_exists(build_url, test_name):
         state = "no such test"
     else:
@@ -73,21 +69,12 @@ class BuildDetailView(generic.ListView):
         results = TestResult.objects.all().filter(test__in=self.tests)
         results = results.values('test', 'result').annotate(abs=Count('pk'))
         for test in self.tests:
-            try:
-                test.passed = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == 1][0]
-            except:
-                pass
-
-            try:
-                test.failed = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == 2][0]
-            except:
-                pass
-
-            try:
-                test.skipped = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == 3][0]
-            except:
-                pass
-
+            for (var, result_id) in [("passed", 1), ("failed", 2), ("failed", 3)]:
+                try:
+                    value = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == result_id][0]
+                    setattr(test, var, value)
+                except:
+                    pass
         return self.tests
 
     def get_context_data(self, **kwargs):
@@ -163,9 +150,8 @@ class ComponentDetailView(generic.ListView):
 
         for build in self.builds:
             build_results = [x[1] for x in buildresults if x[0] == build['name']]
-            build['passed'] = build_results.count(1)
-            build['failed'] = build_results.count(2)
-            build['skipped'] = build_results.count(3)
+            for (name, id) in [('passed', 1), ('failed', 2), ('skipped', 3)]:
+                build[name] = build_results.count(id)
         return []
 
     def get_context_data(self, **kwargs):
