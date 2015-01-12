@@ -18,5 +18,5 @@ urlpatterns = patterns(
     url(r'^sync/builds/(\d{4})(\d{2})(\d{2}).(\d+)/(\w+)/$', 'bgo.views.sync_test', name='sync_test'),
     url(r'^test/(\d+)/$', views.TestHistoryView.as_view(), name='test_history'),
     url(r'^components/$', views.ComponentList.as_view(), name='component_list'),
-    url(r'^components/(\w+)/$', views.ComponentDetailView.as_view(), name='component_details'),
+    url(r'^components/(\S+)/$', views.ComponentDetailView.as_view(), name='component_details'),
 )
