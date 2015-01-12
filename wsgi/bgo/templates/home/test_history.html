@@ -5,7 +5,7 @@
     <ul class="list-group" style="width:200px">
     {% for testresult in object_list %}
         <li class="list-group-item">
-            <a href='/{{ testresult.test.build.name }}'> {{ testresult.test.build.name }}</a>
+            <a href='/{{ testresult.test.build.name }}/integrationtest/#{{testcomponent}}'> {{ testresult.test.build.name }}</a>
             {% if testresult.result == 1 %}
                 <span class="badge list-group-item-success">PASS</span>
             {% elif testresult.result == 3 %}

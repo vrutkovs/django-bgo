@@ -72,4 +72,11 @@
             </div>
         </div>
     </div>
+    <script language="javascript">
+        // Opening accordion based on URL
+        var url = document.location.toString();
+        if ( url.match('#') ) {
+            $('#group'+url.split('#')[1]).addClass('in');
+        }
+    </script>
 {% endblock %}
