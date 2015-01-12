@@ -120,6 +120,25 @@ class IntegrationTestDetailView(generic.ListView):
         return context
 
 
+class ApplicationsTestDetailView(generic.ListView):
+    template_name = 'home/applicationtest_detail.html'
+
+    def get_queryset(self):
+        self.buildslist = get_buildlist()
+        self.build = get_object_or_404(Build, name=self.args[0])
+        self.test = get_object_or_404(Test, build=self.build, name='applicationstest')
+
+        testresult_filter = TestResult.objects.filter(test=self.test)
+        return testresult_filter.order_by('name')
+
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationsTestDetailView, self).get_context_data(**kwargs)
+        context['buildslist'] = self.buildslist
+        context['build'] = self.build
+        context['test'] = self.test
+        return context
+
+
 class TestHistoryView(generic.ListView):
     template_name = 'home/test_history.html'
 

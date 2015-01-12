@@ -10,6 +10,7 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^([\d\.]+?)/$', views.BuildDetailView.as_view(), name='build_detail'),
     url(r'^([\d\.]+?)/integrationtest/$', views.IntegrationTestDetailView.as_view(), name='integrationtest_detail'),
+    url(r'^([\d\.]+?)/applicationstest/$', views.ApplicationsTestDetailView.as_view(), name='applicationtest_detail'),
     url(r'^sync/builds/$', 'bgo.views.sync_buildlist', name='sync_buildlist'),
     url(r'^sync/builds/(\d{4})/$', 'bgo.views.sync_builds_date', name='sync_builds_year'),
     url(r'^sync/builds/(\d{4})(\d{2})/$', 'bgo.views.sync_builds_date', name='sync_builds_month'),

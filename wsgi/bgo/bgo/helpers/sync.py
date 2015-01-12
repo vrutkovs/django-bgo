@@ -209,7 +209,7 @@ def add_new_application_test(url):
 
     apps = obj['apps']
     for app in apps:
-        result = {'timeout': Results.FAILED, 'success': Results.PASSED, 'skipped': Results.SKIPPED}
+        result = {'timeout': Results.FAILED, 'running': Results.FAILED, 'success': Results.PASSED}
 
         tr, created = TestResult.objects.get_or_create(
             test=test, name=app['id'], component='Applications', result=result[app['state']])

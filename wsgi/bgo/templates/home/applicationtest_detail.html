@@ -1,0 +1,45 @@
+{% extends "home/base.html" %}
+
+{% block content %}
+    <h2>Build {{ build.name }}</h2>
+    {% regroup object_list|dictsort:"component" by component as results_list %}
+    <div class="row container">
+        <div class="col-md-8">
+            <div class="panel-group" role="tablist" style=''>
+                <ul class="list-group">
+                {% for result in object_list|dictsortreversed:"result" %}
+                    <li class="list-group-item">
+                        <a href='/test/{{ result.id }}' class='glyphicon glyphicon-stats pull-right' role='button'>
+                        </a>
+                        {% if result.result == 1 %}
+                            <span class="text-success">{{ result.name }}</span>
+                        {% else %}
+                            <span class="text-danger">{{ result.name }}</span>
+                        {% endif %}
+                        
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class='col-md-2'>
+            <div class='panel panel-default'>
+                <div class='panel-heading'>Test stats</div>
+                <ul class="list-group">
+                    {% regroup object_list|dictsort:"result" by result as total_stats %}
+                    {% for stat in total_stats %}
+                    <li class="list-group-item">
+                        {% if stat.grouper == 1 %}
+                        Passed <span class="badge list-group-item-success">{{ stat.list | length }}</span>
+                        {% else %}
+                        Failed <span class="badge list-group-item-danger">{{ stat.list | length }}</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="panel-footer">Total <span class="badge pull-right"> {{ object_list|length}}</span></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
