@@ -18,6 +18,22 @@ def sync_buildlist(request):
                               {'state': state, 'target': "builds list"})
 
 
+def sync_builds_date(request, year, month=None, day=None):
+    start_url = None
+    if month:
+        if day:
+            start_url = '%s/builds/%s/%s/%s' % (settings.BGO_URL, year, month, day)
+        else:
+            start_url = '%s/builds/%s/%s' % (settings.BGO_URL, year, month)
+    else:
+        start_url = '%s/builds/%s' % (settings.BGO_URL, year)
+    print("Syncing builds starting from '%s'" % start_url)
+    state = sync.get_sub_dirs(start_url)
+
+    return render_to_response('home/syncstatus.html',
+                              {'state': state, 'target': "builds list"})
+
+
 def sync_build(request, year, month, day, build_no):
     buildname = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
     state = "success"
@@ -69,7 +85,7 @@ class BuildDetailView(generic.ListView):
         results = TestResult.objects.all().filter(test__in=self.tests)
         results = results.values('test', 'result').annotate(abs=Count('pk'))
         for test in self.tests:
-            for (var, result_id) in [("passed", 1), ("failed", 2), ("failed", 3)]:
+            for (var, result_id) in [("passed", 1), ("failed", 2), ("skipped", 3)]:
                 try:
                     value = [x['abs'] for x in results if x['test'] == test.pk and x['result'] == result_id][0]
                     setattr(test, var, value)
@@ -84,19 +100,19 @@ class BuildDetailView(generic.ListView):
         return context
 
 
-class TestDetailView(generic.ListView):
-    template_name = 'home/test_detail.html'
+class IntegrationTestDetailView(generic.ListView):
+    template_name = 'home/integrationtest_detail.html'
 
     def get_queryset(self):
         self.buildslist = get_buildlist()
         self.build = get_object_or_404(Build, name=self.args[0])
-        self.test = get_object_or_404(Test, build=self.build, name=self.args[1])
+        self.test = get_object_or_404(Test, build=self.build, name='integrationtest')
 
         testresult_filter = TestResult.objects.filter(test=self.test)
         return testresult_filter.order_by('component')
 
     def get_context_data(self, **kwargs):
-        context = super(TestDetailView, self).get_context_data(**kwargs)
+        context = super(IntegrationTestDetailView, self).get_context_data(**kwargs)
         context['buildslist'] = self.buildslist
         context['build'] = self.build
         context['test'] = self.test

@@ -12,7 +12,7 @@ class Build(models.Model):
     name = models.CharField(max_length=200)
     build_no = models.IntegerField(default=0)
     start_date = models.DateTimeField()
-    finished = models.BooleanField(default=1)
+    completed = models.BooleanField(default=1)
 
 
 class Test(models.Model):
@@ -33,7 +33,7 @@ class TestResult(models.Model):
     def build_artifacts_url(self):
         root = 'http://build.gnome.org/continuous/buildmaster/builds'
         build = self.test.build
-        result = '{0}/{1:4}/{2:02}/{3:02}/{4:02}'.format(
+        result = '{0}/{1:4}/{2:02}/{3:02}/{4}'.format(
             root, build.start_date.year, build.start_date.month,
             build.start_date.day, build.build_no)
         if self.test.name == 'integrationtest':

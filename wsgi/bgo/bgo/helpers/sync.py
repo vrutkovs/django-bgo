@@ -12,10 +12,10 @@ known_tests = ['applicationstest', 'integrationtest']
 
 
 def fetch_tests_for_build(url):
-    finished = False
+    completed = False
     for testname in known_tests:
         if not is_test_exists(url, testname):
-            finished &= create_test_for_build(testname, url)
+            completed &= create_test_for_build(testname, url)
         else:
             print("Test %s for %s already exists" % (url, testname))
 
@@ -58,6 +58,7 @@ def create_test_for_build(testname, url):
         return True
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
+        return True
 
 
 def get_build_info_from_url(url):
@@ -94,9 +95,13 @@ def add_new_build(url):
     print('start date: %s' % start_date)
     b, created = Build.objects.get_or_create(name=build_name, start_date=start_date, build_no=build_no)
     print("Build created")
-    if not b.finished:
-        print("Build is not finished, updating tests")
-        b.finished = fetch_tests_for_build(url)
+    if created:
+        print("Build created, fetching tests")
+    elif not b.completed:
+        print("Build is not completed, updating tests")
+    else:
+        print("Build is completed, skipping tests info")
+    b.completed = fetch_tests_for_build(url)
 
 
 def get_sub_dirs(url):
