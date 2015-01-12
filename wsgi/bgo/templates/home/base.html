@@ -4,6 +4,22 @@
 {% bootstrap_javascript jquery=1 %}
 <link href='{% static "bgo/sidebar.css" %}' rel="stylesheet">
 
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">GNOME Continuous</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li id="nav_build" class="active"><a href="/">Builds</a></li>
+                <li id="nav_components"><a href="/components">Components</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://build.gnome.org/continuous/buildmaster/images/z/current/" target="_blank">Download</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <div id='wrapper'>
     <div id="sidebar-wrapper">
