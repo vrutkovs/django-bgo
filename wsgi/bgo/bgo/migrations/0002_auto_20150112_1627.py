@@ -7,12 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bgo', '0002_auto_20141222_1201'),
+        ('bgo', '0001_initial'),
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='testresult',
-            unique_together=set([('test', 'component', 'name', 'result')]),
+        migrations.AlterField(
+            model_name='test',
+            name='success',
+            field=models.BooleanField(default=1),
         ),
     ]

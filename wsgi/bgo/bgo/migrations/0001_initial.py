@@ -13,9 +13,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Build',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', auto_created=True, serialize=False)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
+                ('build_no', models.IntegerField(default=0)),
                 ('start_date', models.DateTimeField()),
+                ('completed', models.BooleanField(default=1)),
             ],
             options={
             },
@@ -24,12 +26,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Test',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', auto_created=True, serialize=False)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
-                ('start_date', models.DateTimeField(verbose_name='date published')),
+                ('start_date', models.DateTimeField()),
                 ('duration', models.IntegerField(default=0)),
                 ('results', models.IntegerField(default=0)),
-                ('screenshot', models.URLField()),
+                ('success', models.BooleanField(default=False)),
                 ('build', models.ForeignKey(to='bgo.Build')),
             ],
             options={
@@ -39,7 +41,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TestResult',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', auto_created=True, serialize=False)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
                 ('component', models.CharField(max_length=200)),
                 ('result', models.IntegerField(default=0)),

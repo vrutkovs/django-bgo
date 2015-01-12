@@ -21,7 +21,7 @@ class Test(models.Model):
     start_date = models.DateTimeField()
     duration = models.IntegerField(default=0)
     results = models.IntegerField(default=Results.NOTSTARTED)
-    screenshot = models.URLField(max_length=200)
+    success = models.BooleanField(default=1)
 
 
 class TestResult(models.Model):

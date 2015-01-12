@@ -35,11 +35,12 @@ def sync_builds_date(request, year, month=None, day=None):
 
 
 def sync_build(request, year, month, day, build_no):
-    buildname = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
+    buildname = '{0:4}{1:02}{2:02}.{3}'.format(int(year), int(month), int(day), int(build_no))
     state = "success"
 
     print("Syncing build '%s'" % buildname)
     build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
+    print(build_url)
     if not sync.is_build_exists(build_url):
         state = "no such build"
     else:
@@ -50,7 +51,7 @@ def sync_build(request, year, month, day, build_no):
 
 
 def sync_test(request, year, month, day, build_no, test_name):
-    buildname = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
+    buildname = '{0:4}{1:02}{2:02}.{3}'.format(int(year), int(month), int(day), int(build_no))
     print("Syncing test '%s' from build %s" % (test_name, buildname))
     state = "success"
 

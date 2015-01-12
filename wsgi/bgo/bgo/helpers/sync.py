@@ -23,7 +23,7 @@ def fetch_tests_for_build(url):
 def is_test_exists(url, testname):
     if is_build_exists(url):
         build_info = get_build_info_from_url(url)
-        build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(*build_info)
+        build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
         return Test.objects.filter(build__name__iexact=build_name, name__iexact=testname)
     else:
         return False
@@ -45,13 +45,13 @@ def create_test_for_build(testname, url):
         duration = obj['elapsedMillis']
 
         build_info = get_build_info_from_url(url)
-        build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(*build_info)
+        build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
         build = Build.objects.filter(name__iexact=build_name)[0]
         start_date = datetime.datetime(build_info[0], build_info[1], build_info[2])
 
         t, created = Test.objects.get_or_create(
             build=build, name=testname, start_date=start_date,
-            duration=int(duration), results=success, screenshot='')
+            duration=int(duration), results=success)
         print("test was created")
 
         add_new_generic_test(url, testname)
@@ -79,7 +79,7 @@ def is_build_exists(url):
     (year, month, day, build_no) = get_build_info_from_url(url)
 
     if year is not None:
-        build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
+        build_name = '{0:4}{1:02}{2:02}.{3}'.format(year, month, day, build_no)
         return len(Build.objects.filter(name__iexact=build_name)) > 0
     else:
         return False
@@ -89,7 +89,7 @@ def add_new_build(url):
     print("add_new_build(%s)" % url)
 
     (year, month, day, build_no) = get_build_info_from_url(url)
-    build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(year, month, day, build_no)
+    build_name = '{0:4}{1:02}{2:02}.{3}'.format(year, month, day, build_no)
     print('build name: %s' % build_name)
     start_date = datetime.datetime(year, month, day)
     print('start date: %s' % start_date)
@@ -141,7 +141,7 @@ def get_sub_dirs(url):
 def add_new_installed_test(url):
     print("add_new_installed_test(%s)" % url)
     build_info = get_build_info_from_url(url)
-    build_name = '{0:4}{1:02}{2:02}.{3:02}'.format(*build_info)
+    build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
     test = Test.objects.filter(build__name__iexact=build_name, name__iexact='integrationtest')[0]
     try:
         response = urllib.request.urlopen("%s/integrationtest/installed-test-results.json" % url)
@@ -161,6 +161,67 @@ def add_new_installed_test(url):
         print("not a test: %s" % e)
 
 
+@transaction.atomic
+def add_new_application_test(url):
+    print("add_new_application_test(%s)" % url)
+    build_info = get_build_info_from_url(url)
+    build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
+    test = Test.objects.filter(build__name__iexact=build_name, name__iexact='applicationstest')[0]
+    try:
+        response = urllib.request.urlopen("%s/applicationstest/meta.json" % url)
+    except urllib.request.HTTPError as e:
+        print("not a test: %s" % e)
+        return
+
+    str_response = response.readall().decode('utf-8')
+    if len(str_response) == 0:
+        print("Empty meta, skipping")
+        return
+    obj = json.loads(str_response)
+
+    if 'complete' not in obj.keys() or not obj['complete']:
+        print("Test is in progress, skipping result parse")
+        return
+
+    success = False
+    if 'success' in obj.keys() and obj['success']:
+        success = True
+
+    # Parse apps.json
+    try:
+        response = urllib.request.urlopen("%s/applicationstest/apps.json" % url)
+    except urllib.request.HTTPError as e:
+        print("no apps.json: %s" % e)
+        test.success = False
+        return
+
+    str_response = response.readall().decode('utf-8')
+    if len(str_response) == 0:
+        print("Empty apps.json, skipping")
+        test.success = False
+        return
+    obj = json.loads(str_response)
+
+    if 'apps' not in obj.keys():
+        print("No apps section")
+        test.success = False
+        return
+
+    apps = obj['apps']
+    for app in apps:
+        result = {'timeout': Results.FAILED, 'success': Results.PASSED, 'skipped': Results.SKIPPED}
+
+        tr, created = TestResult.objects.get_or_create(
+            test=test, name=app['id'], component='Applications', result=result[app['state']])
+        print("added test result for %s: %s" % (app['id'], app['state']))
+
+    test.success = success
+
+
 def add_new_generic_test(url, testname):
     if testname == 'integrationtest':
         add_new_installed_test(url)
+    elif testname == 'applicationstest':
+        add_new_application_test(url)
+    else:
+        print("Unknown test: '%s', skipping" % testname)
