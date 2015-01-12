@@ -12,9 +12,10 @@ known_tests = ['applicationstest', 'integrationtest']
 
 
 def fetch_tests_for_build(url):
+    finished = False
     for testname in known_tests:
         if not is_test_exists(url, testname):
-            create_test_for_build(testname, url)
+            finished &= create_test_for_build(testname, url)
         else:
             print("Test %s for %s already exists" % (url, testname))
 
@@ -36,7 +37,7 @@ def create_test_for_build(testname, url):
         obj = json.loads(str_response)
         complete = obj['complete']
         if not complete:
-            return
+            return False
         if obj['success'] is True:
             success = Results.PASSED
         else:
@@ -54,6 +55,7 @@ def create_test_for_build(testname, url):
         print("test was created")
 
         add_new_generic_test(url, testname)
+        return True
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
 
@@ -92,6 +94,9 @@ def add_new_build(url):
     print('start date: %s' % start_date)
     b, created = Build.objects.get_or_create(name=build_name, start_date=start_date, build_no=build_no)
     print("Build created")
+    if not b.finished:
+        print("Build is not finished, updating tests")
+        b.finished = fetch_tests_for_build(url)
 
 
 def get_sub_dirs(url):
@@ -104,7 +109,6 @@ def get_sub_dirs(url):
         try:
             response = urllib.request.urlopen('%s/snapshot.json' % url)
             add_new_build(url)
-            fetch_tests_for_build(url)
         except urllib.request.HTTPError as e:
             print("not a build")
     else:
