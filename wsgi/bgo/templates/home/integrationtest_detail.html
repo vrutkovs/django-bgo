@@ -2,7 +2,11 @@
 
 {% block content %}
     <h2>Build {{ build.name }}</h2>
-    <h4>Integration tests</h4>
+    <p class="lead">
+        Integration tests
+        <a href="{{test.build_url}}">Logs</a>
+    </p>
+
     {% regroup object_list|dictsort:"component" by component as results_list %}
     <div class="row container">
         <div class="col-md-8">
