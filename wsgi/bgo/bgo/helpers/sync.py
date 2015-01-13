@@ -15,7 +15,8 @@ def fetch_tests_for_build(url):
     completed = False
     for testname in known_tests:
         if not is_test_exists(url, testname):
-            completed &= create_test_for_build(testname, url)
+            result = create_test_for_build(testname, url)
+            completed &= result
         else:
             print("Test %s for %s already exists" % (url, testname))
 
@@ -156,7 +157,7 @@ def add_new_installed_test(url):
             (component, name) = key.split('/', 1)
             result = {'failed': Results.FAILED, 'success': Results.PASSED, 'skipped': Results.SKIPPED}
 
-            if result[value] == 1:
+            if result[value] == Results.FAILED:
                 total_success = False
 
             tr, created = TestResult.objects.get_or_create(
@@ -164,6 +165,7 @@ def add_new_installed_test(url):
             print("added test result for %s:%s - %s" % (component, name, value))
 
         test.success = total_success
+        test.save()
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
         test.success = False
@@ -201,18 +203,21 @@ def add_new_application_test(url):
     except urllib.request.HTTPError as e:
         print("no apps.json: %s" % e)
         test.success = False
+        test.save()
         return
 
     str_response = response.readall().decode('utf-8')
     if len(str_response) == 0:
         print("Empty apps.json, skipping")
         test.success = False
+        test.save()
         return
     obj = json.loads(str_response)
 
     if 'apps' not in obj.keys():
         print("No apps section")
         test.success = False
+        test.save()
         return
 
     total_success = True
@@ -220,7 +225,7 @@ def add_new_application_test(url):
     for app in apps:
         result = {'failed': Results.FAILED, 'timeout': Results.FAILED, 'running': Results.FAILED, 'success': Results.PASSED}
 
-        if result[app['state']] == 1:
+        if result[app['state']] == Results.FAILED:
             total_success = False
 
         tr, created = TestResult.objects.get_or_create(
@@ -228,6 +233,7 @@ def add_new_application_test(url):
         print("added test result for %s: %s" % (app['id'], app['state']))
 
     test.success = success and total_success
+    test.save()
 
 
 def add_new_generic_test(url, testname):
