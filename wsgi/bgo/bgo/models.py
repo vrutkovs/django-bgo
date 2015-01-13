@@ -40,4 +40,6 @@ class TestResult(models.Model):
             result = '%s/%s/work-gnome-continuous-x86_64-runtime/installed-test-results/' % (
                 result, self.test.name)
             result = '%s/%s_%s' % (result, self.component, self.name)
+        else:
+            result = '%s/%s/icons/%s.png' % (result, self.test.name, self.name)
         return result

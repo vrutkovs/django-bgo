@@ -7,6 +7,18 @@
     <div class='panel panel-default'>
         <div class='panel-heading'>
             <a href="/{{ build.name }}/{{ test.name }}">{{ test.name }}</a>
+            <span class="pull-right">
+                {% if test.success %}
+                    <span class="label label-success">
+                        <span class="glyphicon glyphicon-ok"/>
+                    </span>
+                {% else %}
+                    <span class="label label-danger">
+                        <span class="glyphicon glyphicon-remove"/>
+                    </span>
+                {% endif %}
+            </span>
+            
         </div>
         <ul class="list-group">
             <li class="list-group-item">

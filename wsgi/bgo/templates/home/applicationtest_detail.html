@@ -1,25 +1,32 @@
 {% extends "home/base.html" %}
 
 {% block content %}
-    <h2>Build {{ build.name }}</h2>
+    <h2>Build {{ build.name }}</h2> <b>applications test</b>
     {% regroup object_list|dictsort:"component" by component as results_list %}
     <div class="row container">
         <div class="col-md-8">
             <div class="panel-group" role="tablist" style=''>
-                <ul class="list-group">
+                <table class='table'>
                 {% for result in object_list|dictsortreversed:"result" %}
-                    <li class="list-group-item">
-                        <a href='/test/{{ result.id }}' class='glyphicon glyphicon-stats pull-right' role='button'>
-                        </a>
+                    <tr>
+                        <td>
+                            <img src="{{ result.build_artifacts_url}}" alt="{{result.name}}" class="img-thumbnail"
+                             width="100px" height="100px">
+                        </td>
+                        <td valign="center">
                         {% if result.result == 1 %}
-                            <span class="text-success">{{ result.name }}</span>
+                            <p class="text-success">{{ result.name }}</p>
                         {% else %}
-                            <span class="text-danger">{{ result.name }}</span>
+                            <p class="text-danger">{{ result.name }}</p>
                         {% endif %}
-                        
-                    </li>
+                        </td>
+                        <td>
+                            <a href='/test/{{ result.id }}' class='glyphicon glyphicon-stats' role='button'>
+                            </a>
+                        </td>
+                    </tr>
                 {% endfor %}
-                </ul>
+                </table>
             </div>
         </div>
 

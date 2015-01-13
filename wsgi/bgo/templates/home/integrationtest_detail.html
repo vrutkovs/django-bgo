@@ -1,7 +1,7 @@
 {% extends "home/base.html" %}
 
 {% block content %}
-    <h2>Build {{ build.name }}</h2>
+    <h2>Build {{ build.name }}</h2> <b>integration test</b>
     {% regroup object_list|dictsort:"component" by component as results_list %}
     <div class="row container">
         <div class="col-md-8">

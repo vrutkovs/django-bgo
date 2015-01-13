@@ -149,16 +149,24 @@ def add_new_installed_test(url):
         if len(str_response) == 0:
             print("Empty results, skipping")
             return
+
+        total_success = True
         obj = json.loads(str_response)
         for key, value in obj.items():
             (component, name) = key.split('/', 1)
             result = {'failed': Results.FAILED, 'success': Results.PASSED, 'skipped': Results.SKIPPED}
 
+            if result[value] == 1:
+                total_success = False
+
             tr, created = TestResult.objects.get_or_create(
                 test=test, name=name, component=component, result=result[value])
             print("added test result for %s:%s - %s" % (component, name, value))
+
+        test.success = total_success
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
+        test.success = False
 
 
 @transaction.atomic
@@ -207,15 +215,19 @@ def add_new_application_test(url):
         test.success = False
         return
 
+    total_success = True
     apps = obj['apps']
     for app in apps:
-        result = {'timeout': Results.FAILED, 'running': Results.FAILED, 'success': Results.PASSED}
+        result = {'failed': Results.FAILED, 'timeout': Results.FAILED, 'running': Results.FAILED, 'success': Results.PASSED}
+
+        if result[app['state']] == 1:
+            total_success = False
 
         tr, created = TestResult.objects.get_or_create(
             test=test, name=app['id'], component='Applications', result=result[app['state']])
         print("added test result for %s: %s" % (app['id'], app['state']))
 
-    test.success = success
+    test.success = success and total_success
 
 
 def add_new_generic_test(url, testname):
