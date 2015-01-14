@@ -22,35 +22,34 @@
 </nav>
 
 <div id='wrapper'>
-    <div id="sidebar-wrapper">
+    <div id="sidebar-wrapper" class="list-group">
     {% block sidebar %}
         {% if buildslist %}
             <ul class="sidebar-nav">
-                <li class="sidebar-brand"><a href='/'>Builds</a></li>
-                {% if page_obj.has_previous %}
                 <li>
-                    <a href="?page={{ page_obj.previous_page_number }}">
-                        <span class="glyphicon glyphicon-chevron-up"></span>
+                    {% if page_obj.has_previous %}
+                    <a class='btn' role="button" href="?page={{ page_obj.previous_page_number }}">
+                        <span class="glyphicon glyphicon-chevron-up pull-left"></span>
                     </a>
+                    {% endif %}
+                    &nbsp;
                 </li>
-                {% endif %}
                 {% for tmp_build in buildslist %}
-                    <li>
                     {% if build and build.id == tmp_build.id %}
-                        <li class="active">
+                        <div class="list-group-item list-group-item-info">
                     {% else %}
-                        <li class="">
+                        <div class="list-group-item">
                     {% endif %}
                             <a href="/{{ tmp_build.name }}/{{remainder}}">{{ tmp_build.name }}</a>
-                        </li>
+                        </div>
                 {% endfor %}
-                {% if page_obj.has_next %}
                 <li>
-                    <a href="?page={{ page_obj.next_page_number }}">
-                        <span class="glyphicon glyphicon-chevron-down"></span>
+                    {% if page_obj.has_next %}
+                    <a class='btn' role="button" href="?page={{ page_obj.next_page_number }}">
+                        <span class="glyphicon glyphicon-chevron-down pull-left"></span>
                     </a>
+                    {% endif %}
                 </li>
-                {% endif %}
             </ul>
         {% else %}
             <p>No builds are available.</p>
