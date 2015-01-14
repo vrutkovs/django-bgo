@@ -90,6 +90,7 @@ class BuildsListView(generic.ListView):
         self.request.session['page'] = current_page
         context['page_obj'] = paginator.page(current_page)
         context['buildslist'] = buildlist
+        context['remainder'] = '?page=%d' % current_page
         return context
 
 

@@ -41,7 +41,7 @@
                     {% else %}
                         <li class="">
                     {% endif %}
-                            <a href="/{{ tmp_build.name }}/">{{ tmp_build.name }}</a>
+                            <a href="/{{ tmp_build.name }}/{{remainder}}">{{ tmp_build.name }}</a>
                         </li>
                 {% endfor %}
                 {% if page_obj.has_next %}
