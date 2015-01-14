@@ -2,13 +2,14 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
 from django.views import generic
 from django.db.models import Count
+from django.core.paginator import InvalidPage
 
-from bgo.models import Build, Test, TestResult, Task
+from bgo.models import Build, Test, TestResult, Task, Commit
 from bgo.helpers import sync
 
 
 def get_buildlist():
-    return Build.objects.filter(test__isnull=False).distinct().order_by('-start_date', '-build_no')
+    return Build.objects.distinct().order_by('-start_date', '-build_no')
 
 
 def sync_buildlist(request):
@@ -80,15 +81,15 @@ class BuildsListView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(BuildsListView, self).get_context_data(**kwargs)
         (paginator, buildlist) = self.get_paginated_queryset()
-        context['buildslist'] = buildlist
-        current_page = self.request.GET.get('page') or self.request.session['page']
-        if current_page:
-            current_page = int(current_page)
-        else:
+        current_page = self.request.REQUEST.get('page')  # or self.request.session['page']
+        try:
+            current_page = paginator.validate_number(int(current_page))
+        except (InvalidPage, TypeError):
             current_page = 1
         # Save page in session
         self.request.session['page'] = current_page
         context['page_obj'] = paginator.page(current_page)
+        context['buildslist'] = buildlist
         return context
 
 
@@ -100,6 +101,7 @@ class BuildDetailView(BuildsListView):
         self.build = get_object_or_404(Build, name=self.args[0])
         self.tests = Test.objects.filter(build=self.build)
         self.tasks = Task.objects.filter(build=self.build)
+        self.commits = Commit.objects.filter(build=self.build)
 
         self.tests = self.tests.annotate(total=Count('testresult__result'))
         # Magic trick to calculate passed/failed/skipped as Django doesn't like filtering
@@ -118,6 +120,7 @@ class BuildDetailView(BuildsListView):
         context = super(BuildDetailView, self).get_context_data(**kwargs)
         context['build'] = self.build
         context['tasks'] = self.tasks
+        context['commits'] = self.commits
         return context
 
 
@@ -169,7 +172,6 @@ class TestHistoryView(BuildsListView):
             order_by('-test__start_date', '-test__build__build_no')
 
     def get_context_data(self, **kwargs):
-        self.buildslist = get_buildlist()
         context = super(TestHistoryView, self).get_context_data(**kwargs)
         context['testname'] = self.testname
         context['testcomponent'] = self.testcomponent

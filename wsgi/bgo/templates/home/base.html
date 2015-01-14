@@ -56,6 +56,9 @@
             <p>No builds are available.</p>
         {% endif %}
     {% endblock %}
+    {% if build_pagenum %}
+        <input type="hidden" name="page" value="{{ build_pagenum }}">
+    {% endif %}
     </div>
 
     <div id="page-content-wrapper">

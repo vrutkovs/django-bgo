@@ -11,7 +11,7 @@ class Results:
 class Build(models.Model):
     name = models.CharField(max_length=200)
     build_no = models.IntegerField(default=0)
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(default=None)
     completed = models.BooleanField(default=1)
 
     def build_url(self):
@@ -24,8 +24,8 @@ class Build(models.Model):
 class Task(models.Model):
     build = models.ForeignKey(Build)
     name = models.CharField(max_length=200)
-    start_date = models.DateTimeField()
-    duration = models.IntegerField(default=0)
+    start_date = models.DateTimeField(default=None)
+    duration = models.TimeField(default=None)
     success = models.BooleanField(default=1)
 
     tasknames = {
@@ -40,11 +40,20 @@ class Task(models.Model):
             return self.name
 
 
+class Commit(models.Model):
+    build = models.ForeignKey(Build)
+    component = models.CharField(max_length=200)
+    url = models.CharField(max_length=200)
+    sha = models.CharField(max_length=200)
+    message = models.CharField(max_length=200)
+    change_type = models.CharField(max_length=200)
+
+
 class Test(models.Model):
     build = models.ForeignKey(Build)
     name = models.CharField(max_length=200)
     start_date = models.DateTimeField()
-    duration = models.IntegerField(default=0)
+    duration = models.TimeField(default=None)
     results = models.IntegerField(default=Results.NOTSTARTED)
     success = models.BooleanField(default=1)
 

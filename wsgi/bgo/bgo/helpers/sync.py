@@ -3,9 +3,10 @@ from django.db import transaction
 import urllib.request
 import json
 import datetime
+from string import Template
 
 
-from bgo.models import Build, Test, Task, TestResult, Results
+from bgo.models import Build, Test, Task, TestResult, Results, Commit
 
 known_tasks = ['resolve', 'build', 'builddisks']
 known_tests = ['applicationstest', 'integrationtest']
@@ -24,6 +25,10 @@ def fetch_tests_and_tasks_for_build(url):
         if not is_task_exists(url, task):
             result = create_task_for_build(task, url)
             completed &= result
+
+            if task == 'resolve':
+                result = sync_commits_for_build(url)
+                completed &= result
         else:
             print("Task %s for %s already exists" % (url, task))
 
@@ -59,7 +64,7 @@ def create_test_for_build(testname, url):
             success = Results.PASSED
         else:
             success = Results.FAILED
-        duration = obj['elapsedMillis']
+        duration = datetime.datetime.fromtimestamp(int(obj['elapsedMillis'])/1000).time()
 
         build_info = get_build_info_from_url(url)
         build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
@@ -68,13 +73,68 @@ def create_test_for_build(testname, url):
 
         t, created = Test.objects.get_or_create(
             build=build, name=testname, start_date=start_date,
-            duration=int(duration), success=success)
+            duration=duration, success=success)
         print("test was created")
 
         add_new_generic_test(url, testname)
         return True
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
+        return True
+
+
+def get_url_template_for_src(src):
+    known_srcs = {
+        'git:git://git.kernel.org/pub/scm/': 'https://git.kernel.org/cgit/$component/commit/?id=$commit',
+        'git:git://anongit.freedesktop.org/': 'http://cgit.freedesktop.org/$component/commit/?id=$commit',
+        'git:git://anongit.freedesktop.org/git/': 'http://cgit.freedesktop.org/$component/commit/?id=$commit',
+        'git:git://git.gnome.org/': 'https://git.gnome.org/browse/$component/commit/?id=$commit',
+        'git:git://github.com': 'https://github.com/$component/commit/$commit',
+        'git:http://git.chromium.org/': 'http://git.chromium.org/gitweb/?p=$component;a=commit;h=$commit'
+    }
+
+    for known_src in known_srcs:
+        if src.startswith(known_src):
+            component = src.replace(known_src, '')
+            return Template(known_srcs[known_src]).safe_substitute(dict(component=component))
+    raise Exception("No known src for %s" % src)
+
+
+def sync_commits_for_build(url):
+    print("sync_commits_for_build(%s)" % url)
+    try:
+        response = urllib.request.urlopen("%s/bdiff.json" % url)
+        str_response = response.readall().decode('utf-8')
+        obj = json.loads(str_response)
+
+        build_info = get_build_info_from_url(url)
+        build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
+        build = Build.objects.filter(name__iexact=build_name)[0]
+
+        for change_type in ['added', 'modified', 'removed']:
+            changes = obj[change_type]
+            if not changes:
+                continue
+
+            for component_dict in changes:
+                try:
+                    component = component_dict['previous']['name']
+                    url_template = get_url_template_for_src(component_dict['previous']['src'])
+
+                    for commit_dict in component_dict['gitlog']:
+                        commit_sha = commit_dict['Checksum'][:8]
+                        message = commit_dict['Subject']
+                        url = Template(url_template).substitute(dict(commit=commit_sha))
+                        t, created = Commit.objects.get_or_create(
+                            build=build, component=component, sha=commit_sha,
+                            message=message, change_type=change_type, url=url)
+                        print("Added commit %s" % commit_sha)
+                except Exception as e:
+                    print("Malformed commit record")
+
+        return True
+    except urllib.request.HTTPError as e:
+        print("no commits found: %s" % e)
         return True
 
 
@@ -91,7 +151,7 @@ def create_task_for_build(taskname, url):
             success = Results.PASSED
         else:
             success = Results.FAILED
-        duration = obj['elapsedMillis']
+        duration = datetime.datetime.fromtimestamp(int(obj['elapsedMillis'])/1000).time()
 
         build_info = get_build_info_from_url(url)
         build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
@@ -100,7 +160,7 @@ def create_task_for_build(taskname, url):
 
         t, created = Task.objects.get_or_create(
             build=build, name=taskname, start_date=start_date,
-            duration=int(duration), success=success)
+            duration=duration, success=success)
         print("task was created")
         return True
     except urllib.request.HTTPError as e:
