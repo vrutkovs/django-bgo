@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
 from django.views import generic
 from django.db.models import Count
+from django.core.paginator import Paginator
 
 from bgo.models import Build, Test, TestResult
 from bgo.helpers import sync
@@ -68,17 +69,18 @@ class BuildsListView(generic.ListView):
     template_name = 'home/build_list.html'
     context_object_name = 'buildslist'
     model = Build
+    paginate_by = 15
 
     def get_queryset(self):
         return get_buildlist()
 
 
-class BuildDetailView(generic.ListView):
+class BuildDetailView(BuildsListView):
     template_name = 'home/build_detail.html'
 
     def get_queryset(self):
+        self.buildslist = super(BuildDetailView, self).get_queryset()
         self.build = get_object_or_404(Build, name=self.args[0])
-        self.buildslist = get_buildlist()
         self.tests = Test.objects.filter(build=self.build)
 
         self.tests = self.tests.annotate(total=Count('testresult__result'))
