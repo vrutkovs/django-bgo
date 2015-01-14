@@ -101,6 +101,7 @@ class BuildDetailView(BuildsListView):
         self.build = get_object_or_404(Build, name=self.args[0])
         self.tests = Test.objects.filter(build=self.build)
         self.tasks = Task.objects.filter(build=self.build)
+        self.task_names = self.tasks.values_list('name', flat=True)
         self.commits = Commit.objects.filter(build=self.build)
 
         self.tests = self.tests.annotate(total=Count('testresult__result'))
@@ -120,6 +121,7 @@ class BuildDetailView(BuildsListView):
         context = super(BuildDetailView, self).get_context_data(**kwargs)
         context['build'] = self.build
         context['tasks'] = self.tasks
+        context['task_names'] = self.task_names
         context['commits'] = self.commits
         return context
 

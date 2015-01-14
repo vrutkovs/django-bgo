@@ -31,13 +31,22 @@ class Task(models.Model):
     tasknames = {
         "resolve": "Resolve",
         "build": "Build",
-        "builddisks": "Image building"}
+        "builddisks": "Image building",
+        "smoketest": "Smoke test",
+        "smoketest-classic": "Classic mode",
+        "smoketest-wayland": "Wayland"}
 
     def nice_name(self):
         if self.name in self.tasknames.keys():
             return self.tasknames[self.name]
         else:
             return self.name
+
+    def screenshot(self):
+        if 'smoketest' not in self.name:
+            return
+        root = self.build.build_url()
+        return '%s/%s/work-gnome-continuous-x86_64-runtime/screenshot-final.png' % (root, self.name)
 
 
 class Commit(models.Model):

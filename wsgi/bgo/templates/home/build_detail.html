@@ -5,24 +5,48 @@
 
 <div class="row container">
     <div class="col-md-6">
-        {% if tasks %}
         <div class='panel panel-default'>
             <ul class="list-group">
                 {% for task in tasks %}
-                    {% if task.success = 1 %}
-                        <li class="list-group-item list-group-item-success">
-                    {% elif task.success = 2 %}
-                        <li class="list-group-item list-group-item-warning">
-                    {% else %}
-                        <li class="list-group-item list-group-item-info">
+                    {% if 'smoketest' not in task.name %}
+                        {% if task.success = 1 %}
+                            <li class="list-group-item list-group-item-success">
+                        {% elif task.success = 2 %}
+                            <li class="list-group-item list-group-item-warning">
+                        {% else %}
+                            <li class="list-group-item list-group-item-info">
+                        {% endif %}
+                                <span>{{ task.nice_name }}</span>
+                                <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
+                        </li>
                     {% endif %}
-                            <span>{{ task.nice_name }}</span>
-                            <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
-                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if 'smoketest' in task_names %}
+        <div class='panel panel-default'>
+            <div class="panel-heading" role="tab"><span>Smoke tests</span></div>
+            <ul class="list-group">
+                {% for task in tasks %}
+                    {% if 'smoketest' in task.name %}
+                        {% if task.success = 1 %}
+                            <li class="list-group-item list-group-item-success">
+                        {% elif task.success = 2 %}
+                            <li class="list-group-item list-group-item-warning">
+                        {% else %}
+                            <li class="list-group-item list-group-item-info">
+                        {% endif %}
+                                <span>{{ task.nice_name }}</span>
+                                <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
+                                <a class='label label-info pull-right glyphicon glyphicon-picture' href='{{task.screenshot}}'> </a>
+                        </li>
+                    {% endif %}
                 {% endfor %}
             </ul>
         </div>
         {% endif %}
+
     {% for test in object_list %}
         {% if test.success %}
         <div class='panel panel-success'>
