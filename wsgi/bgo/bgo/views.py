@@ -2,9 +2,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
 from django.views import generic
 from django.db.models import Count
-from django.core.paginator import Paginator
 
-from bgo.models import Build, Test, TestResult
+from bgo.models import Build, Test, TestResult, Task
 from bgo.helpers import sync
 
 
@@ -100,6 +99,7 @@ class BuildDetailView(BuildsListView):
     def get_queryset(self):
         self.build = get_object_or_404(Build, name=self.args[0])
         self.tests = Test.objects.filter(build=self.build)
+        self.tasks = Task.objects.filter(build=self.build)
 
         self.tests = self.tests.annotate(total=Count('testresult__result'))
         # Magic trick to calculate passed/failed/skipped as Django doesn't like filtering
@@ -117,6 +117,7 @@ class BuildDetailView(BuildsListView):
     def get_context_data(self, **kwargs):
         context = super(BuildDetailView, self).get_context_data(**kwargs)
         context['build'] = self.build
+        context['tasks'] = self.tasks
         return context
 
 

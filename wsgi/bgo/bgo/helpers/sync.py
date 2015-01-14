@@ -5,13 +5,13 @@ import json
 import datetime
 
 
-from bgo.models import Build, Test, TestResult, Results
+from bgo.models import Build, Test, Task, TestResult, Results
 
-
+known_tasks = ['resolve', 'build', 'builddisks']
 known_tests = ['applicationstest', 'integrationtest']
 
 
-def fetch_tests_for_build(url):
+def fetch_tests_and_tasks_for_build(url):
     completed = False
     for testname in known_tests:
         if not is_test_exists(url, testname):
@@ -20,12 +20,28 @@ def fetch_tests_for_build(url):
         else:
             print("Test %s for %s already exists" % (url, testname))
 
+    for task in known_tasks:
+        if not is_task_exists(url, task):
+            result = create_task_for_build(task, url)
+            completed &= result
+        else:
+            print("Task %s for %s already exists" % (url, task))
+
 
 def is_test_exists(url, testname):
     if is_build_exists(url):
         build_info = get_build_info_from_url(url)
         build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
         return Test.objects.filter(build__name__iexact=build_name, name__iexact=testname)
+    else:
+        return False
+
+
+def is_task_exists(url, task):
+    if is_build_exists(url):
+        build_info = get_build_info_from_url(url)
+        build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
+        return Task.objects.filter(build__name__iexact=build_name, name__iexact=task)
     else:
         return False
 
@@ -52,13 +68,43 @@ def create_test_for_build(testname, url):
 
         t, created = Test.objects.get_or_create(
             build=build, name=testname, start_date=start_date,
-            duration=int(duration), results=success)
+            duration=int(duration), success=success)
         print("test was created")
 
         add_new_generic_test(url, testname)
         return True
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
+        return True
+
+
+def create_task_for_build(taskname, url):
+    print("create_task_for_build(%s, %s)" % (taskname, url))
+    try:
+        response = urllib.request.urlopen("%s/%s/meta.json" % (url, taskname))
+        str_response = response.readall().decode('utf-8')
+        obj = json.loads(str_response)
+        complete = obj['complete']
+        if not complete:
+            return False
+        if obj['success'] is True:
+            success = Results.PASSED
+        else:
+            success = Results.FAILED
+        duration = obj['elapsedMillis']
+
+        build_info = get_build_info_from_url(url)
+        build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
+        build = Build.objects.filter(name__iexact=build_name)[0]
+        start_date = datetime.datetime(build_info[0], build_info[1], build_info[2])
+
+        t, created = Task.objects.get_or_create(
+            build=build, name=taskname, start_date=start_date,
+            duration=int(duration), success=success)
+        print("task was created")
+        return True
+    except urllib.request.HTTPError as e:
+        print("not a task: %s" % e)
         return True
 
 
@@ -102,7 +148,7 @@ def add_new_build(url):
         print("Build is not completed, updating tests")
     else:
         print("Build is completed, skipping tests info")
-    b.completed = fetch_tests_for_build(url)
+    b.completed = fetch_tests_and_tasks_for_build(url)
 
 
 def get_sub_dirs(url):

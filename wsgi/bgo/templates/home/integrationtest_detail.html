@@ -4,7 +4,6 @@
     <h2>Build {{ build.name }}</h2>
     <p class="lead">
         Integration tests
-        <a href="{{test.build_url}}">Logs</a>
     </p>
 
     {% regroup object_list|dictsort:"component" by component as results_list %}

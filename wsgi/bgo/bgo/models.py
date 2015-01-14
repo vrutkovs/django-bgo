@@ -21,6 +21,25 @@ class Build(models.Model):
             self.start_date.day, self.build_no)
 
 
+class Task(models.Model):
+    build = models.ForeignKey(Build)
+    name = models.CharField(max_length=200)
+    start_date = models.DateTimeField()
+    duration = models.IntegerField(default=0)
+    success = models.BooleanField(default=1)
+
+    tasknames = {
+        "resolve": "Resolve",
+        "build": "Build",
+        "builddisks": "Image building"}
+
+    def nice_name(self):
+        if self.name in self.tasknames.keys():
+            return self.tasknames[self.name]
+        else:
+            return self.name
+
+
 class Test(models.Model):
     build = models.ForeignKey(Build)
     name = models.CharField(max_length=200)
@@ -28,6 +47,16 @@ class Test(models.Model):
     duration = models.IntegerField(default=0)
     results = models.IntegerField(default=Results.NOTSTARTED)
     success = models.BooleanField(default=1)
+
+    testnames = {
+        "applicationstest": "Applications test",
+        "integrationtest": "Installed tests"}
+
+    def nice_name(self):
+        if self.name in self.testnames.keys():
+            return self.testnames[self.name]
+        else:
+            return self.name
 
     def build_url(self):
         root = self.build.build_url()

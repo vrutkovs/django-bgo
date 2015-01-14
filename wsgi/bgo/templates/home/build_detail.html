@@ -2,23 +2,43 @@
 
 {% block content %}
 <h2> Build {{ build.name }}</h2>
-<div class="row container">
-{% for test in object_list %}
+<div class="row container" style="width:400px">
+    {% if tasks %}
     <div class='panel panel-default'>
+        <ul class="list-group">
+            {% for task in tasks %}
+                {% if task.success = 1 %}
+                    <li class="list-group-item list-group-item-success">
+                {% elif task.success = 2 %}
+                    <li class="list-group-item list-group-item-warning">
+                {% else %}
+                    <li class="list-group-item list-group-item-info">
+                {% endif %}
+                        <span>{{ task.nice_name }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+{% for test in object_list %}
+    {% if test.success %}
+    <div class='panel panel-success'>
+    {% else %}
+    <div class='panel panel-warning'>
+    {% endif %}
         <div class='panel-heading'>
-            <a href="/{{ build.name }}/{{ test.name }}">{{ test.name }}</a>
+            <a href="/{{ build.name }}/{{ test.name }}">{{ test.nice_name }}</a>
             <span class="pull-right">
                 {% if test.success %}
                     <span class="label label-success">
                         <span class="glyphicon glyphicon-ok"/>
                     </span>
                 {% else %}
-                    <span class="label label-danger">
-                        <span class="glyphicon glyphicon-remove"/>
-                    </span>
+                    <a href="{{test.build_url}}" class="label label-danger" target="_blank">
+                        Logs
+                    </a>
                 {% endif %}
             </span>
-            
         </div>
         <ul class="list-group">
             <li class="list-group-item">
