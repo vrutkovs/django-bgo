@@ -71,15 +71,33 @@ class BuildsListView(generic.ListView):
     model = Build
     paginate_by = 15
 
+    def get_paginated_queryset(self):
+        (paginator, page, buildlist, is_paginated) = self.paginate_queryset(get_buildlist(), 15)
+        return (paginator, buildlist)
+
     def get_queryset(self):
         return get_buildlist()
+
+    def get_context_data(self, **kwargs):
+        context = super(BuildsListView, self).get_context_data(**kwargs)
+        (paginator, buildlist) = self.get_paginated_queryset()
+        context['buildslist'] = buildlist
+        current_page = self.request.GET.get('page') or self.request.session['page']
+        if current_page:
+            current_page = int(current_page)
+        else:
+            current_page = 1
+        # Save page in session
+        self.request.session['page'] = current_page
+        context['page_obj'] = paginator.page(current_page)
+        return context
 
 
 class BuildDetailView(BuildsListView):
     template_name = 'home/build_detail.html'
+    paginate_by = None
 
     def get_queryset(self):
-        self.buildslist = super(BuildDetailView, self).get_queryset()
         self.build = get_object_or_404(Build, name=self.args[0])
         self.tests = Test.objects.filter(build=self.build)
 
@@ -99,15 +117,14 @@ class BuildDetailView(BuildsListView):
     def get_context_data(self, **kwargs):
         context = super(BuildDetailView, self).get_context_data(**kwargs)
         context['build'] = self.build
-        context['buildslist'] = self.buildslist
         return context
 
 
-class IntegrationTestDetailView(generic.ListView):
+class IntegrationTestDetailView(BuildsListView):
     template_name = 'home/integrationtest_detail.html'
+    paginate_by = None
 
     def get_queryset(self):
-        self.buildslist = get_buildlist()
         self.build = get_object_or_404(Build, name=self.args[0])
         self.test = get_object_or_404(Test, build=self.build, name='integrationtest')
 
@@ -116,17 +133,16 @@ class IntegrationTestDetailView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(IntegrationTestDetailView, self).get_context_data(**kwargs)
-        context['buildslist'] = self.buildslist
         context['build'] = self.build
         context['test'] = self.test
         return context
 
 
-class ApplicationsTestDetailView(generic.ListView):
+class ApplicationsTestDetailView(BuildsListView):
     template_name = 'home/applicationtest_detail.html'
+    paginate_by = None
 
     def get_queryset(self):
-        self.buildslist = get_buildlist()
         self.build = get_object_or_404(Build, name=self.args[0])
         self.test = get_object_or_404(Test, build=self.build, name='applicationstest')
 
@@ -135,14 +151,14 @@ class ApplicationsTestDetailView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ApplicationsTestDetailView, self).get_context_data(**kwargs)
-        context['buildslist'] = self.buildslist
         context['build'] = self.build
         context['test'] = self.test
         return context
 
 
-class TestHistoryView(generic.ListView):
+class TestHistoryView(BuildsListView):
     template_name = 'home/test_history.html'
+    paginate_by = None
 
     def get_queryset(self):
         self.test = get_object_or_404(TestResult, id=self.args[0])
@@ -154,14 +170,14 @@ class TestHistoryView(generic.ListView):
     def get_context_data(self, **kwargs):
         self.buildslist = get_buildlist()
         context = super(TestHistoryView, self).get_context_data(**kwargs)
-        context['buildslist'] = self.buildslist
         context['testname'] = self.testname
         context['testcomponent'] = self.testcomponent
         return context
 
 
-class ComponentList(generic.ListView):
+class ComponentList(BuildsListView):
     template_name = 'home/components.html'
+    paginate_by = None
 
     def get_queryset(self):
         self.components = sorted(TestResult.objects.values_list('component', flat=True).distinct())
@@ -169,13 +185,13 @@ class ComponentList(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ComponentList, self).get_context_data(**kwargs)
-        context['buildslist'] = get_buildlist()
         context['components'] = self.components
         return context
 
 
-class ComponentDetailView(generic.ListView):
+class ComponentDetailView(BuildsListView):
     template_name = 'home/component_details.html'
+    paginate_by = None
 
     def get_queryset(self):
         self.component = self.args[0]
@@ -194,7 +210,6 @@ class ComponentDetailView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ComponentDetailView, self).get_context_data(**kwargs)
-        context['buildslist'] = get_buildlist()
         context['builds'] = self.builds
         context['component'] = self.component
         return context
