@@ -38,8 +38,15 @@
                             <li class="list-group-item list-group-item-info">
                         {% endif %}
                                 <span>{{ task.nice_name }}</span>
-                                <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
-                                <a class='label label-info pull-right glyphicon glyphicon-picture' href='{{task.screenshot}}'> </a>
+                                <span class='label label-default pull-right'>
+                                    {% if task.duration|time:"i" != '00' %}
+                                        {{ task.duration|time:"i" }}m
+                                    {% endif %}
+                                    {{ task.duration|time:"s" }}s
+                                </span>
+                                <a class='label label-info pull-right' role="button" href='{{task.screenshot}}' alt='Screenshot' title='Screenshot'>
+                                    <span class='glyphicon glyphicon-picture' ></span>
+                                </a>
                         </li>
                     {% endif %}
                 {% endfor %}
@@ -57,8 +64,12 @@
                 <span>
                     <a href="/{{ build.name }}/{{ test.name }}">{{ test.nice_name }}</a>
                 </span>
-                <span class='label label-default pull-right'>{{ test.duration|time:"i" }}m {{ test.duration|time:"s" }}s</span>
-                &nbsp;
+                <span class='label label-default pull-right'>
+                    {% if test.duration|time:"i" != '00' %}
+                        {{ test.duration|time:"i" }}m
+                    {% endif %}
+                    {{ test.duration|time:"s" }}s
+                </span>
                 <span>
                     {% if test.success %}
                         <span class="label label-success">
