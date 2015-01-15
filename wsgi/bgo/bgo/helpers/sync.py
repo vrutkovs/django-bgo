@@ -81,6 +81,9 @@ def create_test_for_build(testname, url):
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
         return True
+    except ValueError as e:
+        print("Malformed JSON: %s" % e)
+        return
 
 
 def get_url_template_for_src(src):
@@ -136,6 +139,9 @@ def sync_commits_for_build(url):
     except urllib.request.HTTPError as e:
         print("no commits found: %s" % e)
         return True
+    except ValueError as e:
+        print("Malformed JSON: %s" % e)
+        return
 
 
 def create_task_for_build(taskname, url):
@@ -166,6 +172,8 @@ def create_task_for_build(taskname, url):
     except urllib.request.HTTPError as e:
         print("not a task: %s" % e)
         return True
+    except ValueError as e:
+        print("Malformed JSON: %s" % e)
 
 
 def get_build_info_from_url(url):
@@ -234,7 +242,7 @@ def get_sub_dirs(url):
         obj = json.loads(str_response)
         subdirs = obj['subdirs']
         print("found subdirs %s" % subdirs)
-    except urllib.request.HTTPError as e:
+    except (urllib.request.HTTPError, ValueError) as e:
         return "failure: %s" % str(e)
 
     # Iterate over subdirs
@@ -275,6 +283,9 @@ def add_new_installed_test(url):
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
         test.success = False
+    except ValueError as e:
+        print("Malformed JSON: %s" % e)
+        test.success = False
 
 
 @transaction.atomic
@@ -293,7 +304,11 @@ def add_new_application_test(url):
     if len(str_response) == 0:
         print("Empty meta, skipping")
         return
-    obj = json.loads(str_response)
+    try:
+        obj = json.loads(str_response)
+    except ValueError as e:
+        print("Malformed JSON: %s" % e)
+        return
 
     if 'complete' not in obj.keys() or not obj['complete']:
         print("Test is in progress, skipping result parse")
@@ -318,7 +333,12 @@ def add_new_application_test(url):
         test.success = False
         test.save()
         return
-    obj = json.loads(str_response)
+
+    try:
+        obj = json.loads(str_response)
+    except ValueError as e:
+        print("Malformed JSON: %s" % e)
+        return
 
     if 'apps' not in obj.keys():
         print("No apps section")
