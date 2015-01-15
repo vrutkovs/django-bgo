@@ -90,9 +90,8 @@ class TestResult(models.Model):
     def build_artifacts_url(self):
         root = self.test.build_url()
         if self.test.name == 'integrationtest':
-            result = '%s/%s/work-gnome-continuous-x86_64-runtime/installed-test-results/' % (
-                root, self.test.name)
+            result = '%s/work-gnome-continuous-x86_64-runtime/installed-test-results/' % (root)
             result = '%s/%s_%s' % (result, self.component, self.name)
         else:
-            result = '%s/%s/icons/%s.png' % (root, self.test.name, self.name)
+            result = '%s/icons/%s.png' % (root, self.name)
         return result

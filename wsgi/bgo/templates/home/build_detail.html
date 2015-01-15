@@ -3,130 +3,130 @@
 {% block content %}
 <h2> Build {{ build.name }}</h2>
 
-<div class="row container">
-    <div class="col-md-6">
-        <div class='panel panel-default'>
-            <ul class="list-group">
-                {% for task in tasks %}
-                    {% if 'smoketest' not in task.name %}
-                        {% if task.success = 1 %}
-                            <li class="list-group-item list-group-item-success">
-                        {% elif task.success = 2 %}
-                            <li class="list-group-item list-group-item-warning">
-                        {% else %}
-                            <li class="list-group-item list-group-item-info">
-                        {% endif %}
-                                <span>{{ task.nice_name }}</span>
-                                <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-
-        {% if 'smoketest' in task_names %}
-        <div class='panel panel-default'>
-            <div class="panel-heading" role="tab"><span>Smoke tests</span></div>
-            <ul class="list-group">
-                {% for task in tasks %}
-                    {% if 'smoketest' in task.name %}
-                        {% if task.success = 1 %}
-                            <li class="list-group-item list-group-item-success">
-                        {% elif task.success = 2 %}
-                            <li class="list-group-item list-group-item-warning">
-                        {% else %}
-                            <li class="list-group-item list-group-item-info">
-                        {% endif %}
-                                <span>{{ task.nice_name }}</span>
-                                <span class='label label-default pull-right'>
-                                    {% if task.duration|time:"i" != '00' %}
-                                        {{ task.duration|time:"i" }}m
-                                    {% endif %}
-                                    {{ task.duration|time:"s" }}s
-                                </span>
-                                <a class='label label-info pull-right' role="button" href='{{task.screenshot}}' alt='Screenshot' title='Screenshot'>
-                                    <span class='glyphicon glyphicon-picture' ></span>
-                                </a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-    {% for test in object_list %}
-        {% if test.success %}
-        <div class='panel panel-success'>
-        {% else %}
-        <div class='panel panel-danger'>
-        {% endif %}
-            <div class='panel-heading'>
-                <span>
-                    <a href="/{{ build.name }}/{{ test.name }}">{{ test.nice_name }}</a>
-                </span>
-                <span class='label label-default pull-right'>
-                    {% if test.duration|time:"i" != '00' %}
-                        {{ test.duration|time:"i" }}m
-                    {% endif %}
-                    {{ test.duration|time:"s" }}s
-                </span>
-                <span>
-                    {% if test.success %}
-                        <span class="label label-success">
-                            <span class="glyphicon glyphicon-ok"/>
-                        </span>
-                    {% else %}
-                        <a href="{{test.build_url}}" class="label label-info pull-right" target="_blank">
-                            Logs
-                        </a>
-                    {% endif %}
-                </span>
-            </div>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    Passed <span class="badge list-group-item-success">{{ test.passed }}</span>
-                </li>
-                <li class="list-group-item">
-                    Skipped <span class="badge list-group-item-info">{{ test.skipped }}</span>
-                </li>
-                <li class="list-group-item">
-                    Failed <span class="badge list-group-item-danger">{{ test.failed }}</span>
-                </li>
-            </ul>
-            <div class="panel-footer">Total <span class="badge pull-right"> {{ test.total }}</span></div>
-        </div>
-    {% endfor %}
-    </div>
-
-    <div class="col-md-4">
-        {% if commits %}
-        <div class='panel panel-default'>
-            <div class="panel-heading">Changes in this build</div>
-            {% regroup commits|dictsort:"component" by component as results_list %}
-            <ul class="list-group">
-            {% for component in results_list %}
-                <div id="{{ component.grouper }}" class="panel-heading" role="tab">
-                        {{ component.grouper }}
-                    <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#group{{component.grouper|slugify}}" aria-expanded="false" aria-controls="group{{ component.grouper|slugify }}" data-toggle="collapse">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-4">
+            {% if commits %}
+            <div class='panel panel-default'>
+                <div id="commits_header" class="panel-heading">
+                    Changes in this build
+                    <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#commits" aria-expanded="false" aria-controls="commits" data-toggle="collapse">
                     </a>
-                    <span class="pull-right">{{component.list|length}} commit{{ component.list|length|pluralize }}</span>
                 </div>
-                <div id='group{{ component.grouper|slugify }}' class="panel-collapse collapse panel"
+                {% regroup commits|dictsort:"component" by component as results_list %}
+                <div id='commits' class="panel-collapse collapse"
                     aria-labelledby='{{ component.grouper|slugify }}' role='tabpanel' aria-expanded="false">
-                    <table class="table table-condensed table-hover">
-                    {% for commit in component.list %}
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td><h5><a href='{{ commit.url }}'>{{ commit.sha }}</a></h5></td>
-                            <td><h5>{{ commit.message }}</h5></td>
-                        </tr>
+                <ul class="list-group">
+                {% for component in results_list %}
+                    <div id="{{ component.grouper }}" class="panel-heading" role="tab">
+                            {{ component.grouper }}
+                        <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#group{{component.grouper|slugify}}" aria-expanded="false" aria-controls="group{{ component.grouper|slugify }}" data-toggle="collapse">
+                        </a>
+                        <span class="pull-right">{{component.list|length}} commit{{ component.list|length|pluralize }}</span>
+                    </div>
+                    <div id='group{{ component.grouper|slugify }}' class="panel-collapse collapse panel"
+                        aria-labelledby='{{ component.grouper|slugify }}' role='tabpanel' aria-expanded="false">
+                        <table class="table table-condensed table-hover">
+                        {% for commit in component.list %}
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td><h5><a href='{{ commit.url }}'>{{ commit.sha }}</a></h5></td>
+                                <td><h5>{{ commit.message }}</h5></td>
+                            </tr>
+                        {% endfor %}
+                        </table>
+                    </div>
+                {% endfor %}
+                </ul>
+                </div>
+            </div>
+            {% endif %}
+            <div class='panel panel-default'>
+                <ul class="list-group">
+                    {% for task in tasks %}
+                        {% if 'smoketest' not in task.name %}
+                            {% if task.success = 1 %}
+                                <li class="list-group-item list-group-item-success">
+                            {% elif task.success = 2 %}
+                                <li class="list-group-item list-group-item-warning">
+                            {% else %}
+                                <li class="list-group-item list-group-item-info">
+                            {% endif %}
+                                    <span>{{ task.nice_name }}</span>
+                                    <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
+                            </li>
+                        {% endif %}
                     {% endfor %}
-                    </table>
+
+                {% if 'smoketest' in task_names %}
+                    {% for task in tasks %}
+                        {% if 'smoketest' in task.name %}
+                            {% if task.success = 1 %}
+                                <li class="list-group-item list-group-item-success">
+                            {% elif task.success = 2 %}
+                                <li class="list-group-item list-group-item-warning">
+                            {% else %}
+                                <li class="list-group-item list-group-item-info">
+                            {% endif %}
+                                    <span>{{ task.nice_name }}</span>
+                                    <span class='label label-default pull-right'>
+                                        {% if task.duration|time:"i" != '00' %}
+                                            {{ task.duration|time:"i" }}m
+                                        {% endif %}
+                                        {{ task.duration|time:"s" }}s
+                                    </span>
+                                    <a class='label label-info pull-right' role="button" href='{{task.screenshot}}' alt='Screenshot' title='Screenshot'>
+                                        <span class='glyphicon glyphicon-picture' ></span>
+                                    </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% for test in object_list %}
+                {% if test.success %}
+                <div class='panel panel-success'>
+                {% else %}
+                <div class='panel panel-danger'>
+                {% endif %}
+                    <div class='panel-heading'>
+                        <span>
+                            <a href="/{{ build.name }}/{{ test.name }}">{{ test.nice_name }}</a>
+                        </span>
+                        <span class='label label-default pull-right'>
+                            {% if test.duration|time:"i" != '00' %}
+                                {{ test.duration|time:"i" }}m
+                            {% endif %}
+                            {{ test.duration|time:"s" }}s
+                        </span>
+                        <span>
+                            {% if test.success %}
+                                <span class="label label-success">
+                                    <span class="glyphicon glyphicon-ok"/>
+                                </span>
+                            {% else %}
+                                <a href="{{test.build_url}}" class="label label-info pull-right" target="_blank">
+                                    Logs
+                                </a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            Passed <span class="badge list-group-item-success">{{ test.passed }}</span>
+                        </li>
+                        <li class="list-group-item">
+                            Skipped <span class="badge list-group-item-info">{{ test.skipped }}</span>
+                        </li>
+                        <li class="list-group-item">
+                            Failed <span class="badge list-group-item-danger">{{ test.failed }}</span>
+                        </li>
+                    </ul>
+                    <div class="panel-footer">Total <span class="badge pull-right"> {{ test.total }}</span></div>
                 </div>
             {% endfor %}
-            </ul>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
