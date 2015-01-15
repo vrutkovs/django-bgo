@@ -1,6 +1,5 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
-{% load bgo_tags %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery=1 %}
 <link href='{% static "bgo/sidebar.css" %}' rel="stylesheet">
@@ -36,8 +35,16 @@
                     &nbsp;
                 </li>
                 {% for tmp_build in buildslist %}
-                    <div class="{% build_list_item_class build tmp_build %}">
-                        <a class="{% build_link_class tmp_build.has_smoketests %}" 
+                    {% if build and build.id == tmp_build.id %}
+                    <div class="list-group-item list-group-item-info">
+                    {% else %}
+                    <div class="list-group-item">
+                    {% endif %}
+
+                    <a 
+                    {% if not tmp_build.has_smoketests %}
+                        class="text-muted"
+                    {% endif %} 
                            href="/{{ tmp_build.name }}/{{remainder}}">{{ tmp_build.name }}</a>
                     </div>
                 {% endfor %}

@@ -6,7 +6,7 @@ import datetime
 from string import Template
 
 
-from bgo.models import Build, Test, Task, TestResult, Results, Commit
+from bgo.bgo.models import Build, Test, Task, TestResult, Results, Commit
 
 known_tasks = ['resolve', 'build', 'builddisks', 'smoketest', 'smoketest-classic', 'smoketest-wayland']
 known_tests = ['applicationstest', 'integrationtest']

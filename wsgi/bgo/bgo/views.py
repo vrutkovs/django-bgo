@@ -4,8 +4,8 @@ from django.views import generic
 from django.db.models import Count
 from django.core.paginator import InvalidPage
 
-from bgo.models import Build, Test, TestResult, Task, Commit
-from bgo.helpers import sync
+from bgo.bgo.models import Build, Test, TestResult, Task, Commit
+from bgo.bgo.helpers import sync
 
 
 def get_buildlist():

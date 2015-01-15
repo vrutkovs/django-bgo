@@ -32,10 +32,10 @@ if ON_OPENSHIFT:
 SECRET_KEY = use_keys['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ON_OPENSHIFT:
-    DEBUG = False
-else:
-    DEBUG = True
+#if ON_OPENSHIFT:
+#    DEBUG = False
+#else:
+DEBUG = True
 
 TEMPLATE_DEBUG = DEBUG
 
@@ -93,6 +93,11 @@ if ON_OPENSHIFT:
 
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'templates'),
+)
+
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
