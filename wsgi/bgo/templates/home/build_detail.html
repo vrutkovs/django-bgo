@@ -14,7 +14,7 @@
                     </a>
                 </div>
                 {% regroup commits|dictsort:"component" by component as results_list %}
-                <div id='commits' class="panel-collapse collapse"
+                <div id='commits' class="panel-collapse"
                     aria-labelledby='{{ component.grouper|slugify }}' role='tabpanel' aria-expanded="false">
                 <ul class="list-group">
                 {% for component in results_list %}
