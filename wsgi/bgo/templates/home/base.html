@@ -37,8 +37,10 @@
                 {% for tmp_build in buildslist %}
                     {% if build and build.id == tmp_build.id %}
                         <div class="list-group-item list-group-item-info">
+                    {% elif tmp_build.has_smoketests %}
+                        <div class="list-group-item list-group-item-success">
                     {% else %}
-                        <div class="list-group-item">
+                        <div class="list-group-item disabled">
                     {% endif %}
                             <a href="/{{ tmp_build.name }}/{{remainder}}">{{ tmp_build.name }}</a>
                         </div>

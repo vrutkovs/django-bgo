@@ -20,6 +20,10 @@ class Build(models.Model):
             root, self.start_date.year, self.start_date.month,
             self.start_date.day, self.build_no)
 
+    def has_smoketests(self):
+        tests = Task.objects.filter(build=self).values_list("name", flat=True)
+        return 'smoketest' in tests
+
 
 class Task(models.Model):
     build = models.ForeignKey(Build)
