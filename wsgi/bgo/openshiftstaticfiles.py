@@ -3,7 +3,6 @@ import static
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIHandler
-from django.core.handlers.base import get_path_info
 from django.contrib.staticfiles.handlers import StaticFilesHandler as DebugHandler
 
 try:
@@ -54,16 +53,7 @@ class Cling(WSGIHandler):
 
     def __call__(self, environ, start_response):
         # Hand non-static requests to Django
-        if not self._should_handle(get_path_info(environ)):
-            return self.application(environ, start_response)
-
-        # Serve static requests from static.Cling
-        if not self.debug:
-            environ = self._transpose_environ(environ)
-            return self.cling(environ, start_response)
-        # Serve static requests in debug mode from StaticFilesHandler
-        else:
-            return self.debug_cling(environ, start_response)
+        return self.application(environ, start_response)
 
 
 class MediaCling(Cling):
