@@ -3,8 +3,10 @@ import os
 import imp
 import sys
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+sys.path.append(os.path.join('wsgi'))
 sys.path.append(os.path.join('wsgi', 'bgo'))
+sys.path.append(os.path.join('wsgi', 'bgo', 'bgo'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'bgo.settings'
 
 if __name__ == '__main__':
     ip = 'localhost'
