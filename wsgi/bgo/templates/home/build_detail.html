@@ -113,15 +113,23 @@
                         </span>
                     </div>
                     <ul class="list-group">
+                        {% if test.passed > 0 %}
                         <li class="list-group-item">
                             Passed <span class="badge list-group-item-success">{{ test.passed }}</span>
                         </li>
+                        {% endif %}
+
+                        {% if test.skipped > 0 %}
                         <li class="list-group-item">
                             Skipped <span class="badge list-group-item-info">{{ test.skipped }}</span>
                         </li>
+                        {% endif %}
+
+                        {% if test.failed > 0 %}
                         <li class="list-group-item">
                             Failed <span class="badge list-group-item-danger">{{ test.failed }}</span>
                         </li>
+                        {% endif %}
                     </ul>
                     <div class="panel-footer">Total <span class="badge pull-right"> {{ test.total }}</span></div>
                 </div>
