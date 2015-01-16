@@ -10,12 +10,12 @@
             <div class='panel panel-default'>
                 <div id="commits_header" class="panel-heading">
                     Changes in this build
-                    <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#commits" aria-expanded="false" aria-controls="commits" data-toggle="collapse">
+                    <a class="pull-right glyphicon glyphicon-chevron-down btn-xs" href="#commits" aria-expanded="true" aria-controls="commits" data-toggle="collapse">
                     </a>
                 </div>
                 {% regroup commits|dictsort:"component" by component as results_list %}
-                <div id='commits' class="panel-collapse"
-                    aria-labelledby='{{ component.grouper|slugify }}' role='tabpanel' aria-expanded="false">
+                <div id='commits' class="panel-collapse in"
+                    aria-labelledby='{{ component.grouper|slugify }}' role='tabpanel' aria-expanded="true">
                 <ul class="list-group">
                 {% for component in results_list %}
                     <div id="{{ component.grouper }}" class="panel-heading" role="tab">
