@@ -225,16 +225,12 @@ def get_sub_dirs(url):
     print("get_sub_dirs(%s)" % url)
 
     print("checking build %s " % url)
-    # If this build already exists, skip it
-    if not is_build_exists(url):
-        # If snapshot.json exists, add a new build
-        try:
-            response = urllib.request.urlopen('%s/snapshot.json' % url)
-            add_new_build(url)
-        except urllib.request.HTTPError as e:
-            print("not a build")
-    else:
-        print("build is already added, skipping")
+    # If snapshot.json exists, add a new build
+    try:
+        response = urllib.request.urlopen('%s/snapshot.json' % url)
+        add_new_build(url)
+    except urllib.request.HTTPError as e:
+        print("not a build")
 
     print("looking for subdirs")
     subdirs = []
