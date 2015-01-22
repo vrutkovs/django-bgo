@@ -24,6 +24,10 @@ class Build(models.Model):
         tests = Task.objects.filter(build=self).values_list("name", flat=True)
         return 'smoketest' in tests
 
+    def has_failed_tasks(self):
+        task_results = Task.objects.filter(build=self).values_list("success", flat=True)
+        return False in task_results
+
 
 class Task(models.Model):
     build = models.ForeignKey(Build)
@@ -31,6 +35,7 @@ class Task(models.Model):
     start_date = models.DateTimeField(default=None)
     duration = models.TimeField(default=None)
     success = models.BooleanField(default=1)
+    status = models.CharField(max_length=200)
 
     tasknames = {
         "resolve": "Resolve",
@@ -46,11 +51,22 @@ class Task(models.Model):
         else:
             return self.name
 
+    def get_failed_part(self):
+        failed_pos = self.status.find('failed:')
+        if failed_pos >= 0:
+            return self.status[self.status.find('failed:'):]
+        else:
+            return ''
+
     def screenshot(self):
         if 'smoketest' not in self.name:
             return
         root = self.build.build_url()
         return '%s/%s/work-gnome-continuous-x86_64-runtime/screenshot-final.png' % (root, self.name)
+
+    def log_url(self):
+        root = self.build.build_url()
+        return '%s/%s/output.txt' % (root, self.name)
 
 
 class Commit(models.Model):

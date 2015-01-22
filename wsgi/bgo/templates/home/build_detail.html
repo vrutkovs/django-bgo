@@ -45,15 +45,19 @@
                 <ul class="list-group">
                     {% for task in tasks %}
                         {% if 'smoketest' not in task.name %}
-                            {% if task.success = 1 %}
+                            {% if task.success %}
                                 <li class="list-group-item list-group-item-success">
-                            {% elif task.success = 2 %}
-                                <li class="list-group-item list-group-item-warning">
                             {% else %}
-                                <li class="list-group-item list-group-item-info">
+                                <li class="list-group-item list-group-item-danger">
                             {% endif %}
                                     <span>{{ task.nice_name }}</span>
+                                    <small class='text-muted'>{{ task.get_failed_part }}</small>
                                     <span class='label label-default pull-right'>{{ task.duration|time:"i" }}m {{ task.duration|time:"s" }}s</span>
+                                    {% if not task.success %}
+                                    <a href="{{task.log_url}}" class="label label-info pull-right" target="_blank">
+                                        Logs
+                                    </a>
+                                    {% endif %}
                             </li>
                         {% endif %}
                     {% endfor %}
@@ -61,14 +65,15 @@
                 {% if 'smoketest' in task_names %}
                     {% for task in tasks %}
                         {% if 'smoketest' in task.name %}
-                            {% if task.success = 1 %}
+                            {% if task.success %}
                                 <li class="list-group-item list-group-item-success">
-                            {% elif task.success = 2 %}
-                                <li class="list-group-item list-group-item-warning">
                             {% else %}
-                                <li class="list-group-item list-group-item-info">
+                                <li class="list-group-item list-group-item-danger">
                             {% endif %}
                                     <span>{{ task.nice_name }}</span>
+                                    <a href="{{test.build_url}}" class="label label-info pull-right" target="_blank">
+                                        Logs
+                                    </a>
                                     <span class='label label-default pull-right'>
                                         {% if task.duration|time:"i" != '00' %}
                                             {{ task.duration|time:"i" }}m

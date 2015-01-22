@@ -151,23 +151,25 @@ def create_task_for_build(taskname, url):
         str_response = response.readall().decode('utf-8')
         obj = json.loads(str_response)
         complete = obj['complete']
+        success = False
         if not complete:
             return False
         if obj['success'] is True:
-            success = Results.PASSED
-        else:
-            success = Results.FAILED
+            success = True
         duration = datetime.datetime.fromtimestamp(int(obj['elapsedMillis'])/1000).time()
 
         build_info = get_build_info_from_url(url)
         build_name = '{0:4}{1:02}{2:02}.{3}'.format(*build_info)
         build = Build.objects.filter(name__iexact=build_name)[0]
         start_date = datetime.datetime(build_info[0], build_info[1], build_info[2])
+        status = ''
+        if 'status' in obj.keys():
+            status = obj['status'].strip()
 
         t, created = Task.objects.get_or_create(
             build=build, name=taskname, start_date=start_date,
-            duration=duration, success=success)
-        print("task was created")
+            duration=duration, success=success, status=status)
+        print("task was created, success=%s" % success)
         return True
     except urllib.request.HTTPError as e:
         print("not a task: %s" % e)
