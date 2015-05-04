@@ -94,7 +94,7 @@ def create_test_for_build(testname, url):
         if created:
             sec = datetime.timedelta(minutes=duration.minute, seconds=duration.second).seconds
             payload = {
-                'name': testname, 'date': start_date, 'build': build.id,
+                'name': testname, 'date': start_date, 'build': build.url,
                 'duration': sec, 'success': success}
             print(payload)
             es.index(index="tests", doc_type='test', id=t.id, body=payload)
@@ -201,7 +201,7 @@ def create_task_for_build(taskname, url):
         if created:
             sec = datetime.timedelta(minutes=duration.minute, seconds=duration.second).seconds
             payload = {
-                'name': taskname, 'date': start_date, 'build': build.id,
+                'name': taskname, 'date': start_date, 'build': build.url,
                 'duration': sec, 'success': success}
             print(payload)
             es.index(index="tests", doc_type='test', id=t.id, body=payload)
