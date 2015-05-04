@@ -6,6 +6,7 @@ import os
 # Uncomment one or more lines below in the install_requires section
 # for the specific client drivers/modules your application needs.
 packages = ['Django==1.7',
+            'psycopg2==2.5.4',
             'static3',
             'django_pdb',
             'django-bootstrap3']
