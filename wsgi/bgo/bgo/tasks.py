@@ -226,15 +226,20 @@ def add_new_build(url):
         b.completed = tmp_completed
         b.save()
 
+    return created
 
-def get_sub_dirs(url):
+
+def get_sub_dirs(url, quick=False):
     print("get_sub_dirs(%s)" % url)
 
     print("checking build %s " % url)
     # If snapshot.json exists, add a new build
     try:
         response = urllib.request.urlopen('%s/snapshot.json' % url)
-        add_new_build(url)
+        created = add_new_build(url)
+        if not created and quick:
+            print("Found existing build, so stopping sync")
+            return
     except urllib.request.HTTPError as e:
         print("not a build")
 
@@ -381,10 +386,21 @@ def get_buildlist():
     return Build.objects.distinct().order_by('-start_date', '-build_no')
 
 
+def sync_full():
+    lock.acquire()
+    try:
+        get_sub_dirs('%s/builds' % settings.BGO_URL, quick=False)
+    except Exception:
+        message = traceback.format_exc().splitlines()
+        print('sync_quick: Error: %s' % message)
+    finally:
+        lock.release()
+
+
 def sync_quick():
     lock.acquire()
     try:
-        get_sub_dirs('%s/builds' % settings.BGO_URL)
+        get_sub_dirs('%s/builds' % settings.BGO_URL, quick=True)
     except Exception:
         message = traceback.format_exc().splitlines()
         print('sync_quick: Error: %s' % message)
