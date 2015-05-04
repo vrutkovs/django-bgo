@@ -67,7 +67,7 @@ class Task(models.Model):
 
     def log_url(self):
         root = self.build.build_url()
-        return '%s/%s/output.txt' % (root, self.name)
+        return '%s/%s/' % (root, self.name)
 
 
 class Commit(models.Model):
