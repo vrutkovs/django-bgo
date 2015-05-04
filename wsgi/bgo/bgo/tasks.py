@@ -92,9 +92,10 @@ def create_test_for_build(testname, url):
         print("test was created")
 
         if created:
+            sec = datetime.timedelta(minutes=duration.minute, seconds=duration.second).seconds
             payload = {
                 'name': testname, 'date': start_date, 'build': build,
-                'duration': int(duration), 'success': success}
+                'duration': sec, 'success': success}
             print(payload)
             es.index(index="tests", doc_type='test', id=t.id, body=payload)
 
