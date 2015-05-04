@@ -42,6 +42,7 @@ class Task(models.Model):
         "build": "Build",
         "builddisks": "Image building",
         "smoketest": "Smoke test",
+        "smoketest-timed": "Timed login",
         "smoketest-classic": "Classic mode",
         "smoketest-wayland": "Wayland"}
 

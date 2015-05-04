@@ -11,7 +11,7 @@ from string import Template
 
 from .models import Build, Test, Task, TestResult, Results, Commit
 
-known_tasks = ['resolve', 'build', 'builddisks', 'smoketest', 'smoketest-classic', 'smoketest-wayland']
+known_tasks = ['resolve', 'build', 'builddisks', 'smoketest', 'smoketest-classic', 'smoketest-wayland', 'smoketest-timed']
 known_tests = ['applicationstest', 'integrationtest']
 
 lock = threading.Lock()
