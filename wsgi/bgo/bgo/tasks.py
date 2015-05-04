@@ -28,17 +28,13 @@ def fetch_tests_and_tasks_for_build(url):
     completed = True
     for testname in known_tests:
         if not is_test_exists(url, testname):
-            result = create_test_for_build(testname, url)
-            if result:
-                completed = result
+            completed = create_test_for_build(testname, url)
         else:
             print("Test %s for %s already exists" % (url, testname))
 
     for task in known_tasks:
         if not is_task_exists(url, task):
-            result = create_task_for_build(task, url)
-            if result:
-                completed = result
+            completed = create_task_for_build(task, url)
 
             if task == 'resolve':
                 sync_commits_for_build(url)
@@ -103,10 +99,10 @@ def create_test_for_build(testname, url):
         return True
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
-        return None
+        return False
     except ValueError as e:
         print("Malformed JSON: %s" % e)
-        return None
+        return False
 
 
 def get_url_template_for_src(src):
@@ -209,10 +205,10 @@ def create_task_for_build(taskname, url):
         return True
     except urllib.request.HTTPError as e:
         print("not a task: %s" % e)
-        return None
+        return False
     except ValueError as e:
         print("Malformed JSON: %s" % e)
-        return None
+        return False
 
 
 def get_build_info_from_url(url):
