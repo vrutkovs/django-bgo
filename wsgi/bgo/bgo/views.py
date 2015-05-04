@@ -1,68 +1,10 @@
-from django.shortcuts import render_to_response, get_object_or_404
-from django.conf import settings
+from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.db.models import Count
 from django.core.paginator import InvalidPage
 
 from bgo.bgo.models import Build, Test, TestResult, Task, Commit
-from bgo.bgo.helpers import sync
-
-
-def get_buildlist():
-    return Build.objects.distinct().order_by('-start_date', '-build_no')
-
-
-def sync_buildlist(request):
-    state = sync.get_sub_dirs('%s/builds' % settings.BGO_URL)
-
-    return render_to_response('home/syncstatus.html',
-                              {'state': state, 'target': "builds list"})
-
-
-def sync_builds_date(request, year, month=None, day=None):
-    start_url = None
-    if month:
-        if day:
-            start_url = '%s/builds/%s/%s/%s' % (settings.BGO_URL, year, month, day)
-        else:
-            start_url = '%s/builds/%s/%s' % (settings.BGO_URL, year, month)
-    else:
-        start_url = '%s/builds/%s' % (settings.BGO_URL, year)
-    print("Syncing builds starting from '%s'" % start_url)
-    state = sync.get_sub_dirs(start_url)
-
-    return render_to_response('home/syncstatus.html',
-                              {'state': state, 'target': "builds list"})
-
-
-def sync_build(request, year, month, day, build_no):
-    buildname = '{0:4}{1:02}{2:02}.{3}'.format(int(year), int(month), int(day), int(build_no))
-    state = "success"
-
-    print("Syncing build '%s'" % buildname)
-    build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
-    print(build_url)
-    if not sync.is_build_exists(build_url):
-        state = "no such build"
-    else:
-        sync.fetch_tests_for_build(build_url)
-
-    return render_to_response('home/syncstatus.html',
-                              {'state': state, 'target': "build %s" % buildname})
-
-
-def sync_test(request, year, month, day, build_no, test_name):
-    buildname = '{0:4}{1:02}{2:02}.{3}'.format(int(year), int(month), int(day), int(build_no))
-    print("Syncing test '%s' from build %s" % (test_name, buildname))
-    state = "success"
-
-    build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
-    if not sync.is_test_exists(build_url, test_name):
-        state = "no such test"
-    else:
-        sync.add_new_generic_test(build_url, test_name)
-    return render_to_response('home/syncstatus.html',
-                              {'state': state, 'target': "build %s test %s" % (buildname, test_name)})
+from bgo.bgo.tasks import get_buildlist
 
 
 class BuildsListView(generic.ListView):

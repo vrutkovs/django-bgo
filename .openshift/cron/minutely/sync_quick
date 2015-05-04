@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Copyright (c) 2012, Alexander Todorov <atodorov@nospam.otb.bg>
+#
+# This script is symlinked to from the hourly/minutely, etc. directories
+#
+# SYNOPSIS
+#
+# ./run_celery_task cron_search_dates
+#
+# OR
+#
+# ln -s run_celery_task cron_search_dates
+# ./cron_search_dates
+#
+
+TASK_NAME=sync_quick
+
+if [ -n "$OPENSHIFT_APP_DIR" ]; then
+    source $OPENSHIFT_APP_DIR/virtenv/bin/activate
+    export PYTHON_EGG_CACHE=$OPENSHIFT_DATA_DIR/.python-eggs
+    REPO_DIR=$OPENSHIFT_REPO_DIR
+else
+    REPO_DIR=$(dirname $0)"/../../.."
+fi
+
+echo "import bgo.tasks; bgo.tasks.$TASK_NAME()" | $REPO_DIR/wsgi/bgo/manage.py shell

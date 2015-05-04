@@ -1,15 +1,20 @@
 from django.db import transaction
+from django.conf import settings
 
 import urllib.request
 import json
 import datetime
+import threading
+import traceback
 from string import Template
 
 
-from bgo.bgo.models import Build, Test, Task, TestResult, Results, Commit
+from .models import Build, Test, Task, TestResult, Results, Commit
 
 known_tasks = ['resolve', 'build', 'builddisks', 'smoketest', 'smoketest-classic', 'smoketest-wayland']
 known_tests = ['applicationstest', 'integrationtest']
+
+lock = threading.Lock()
 
 
 def fetch_tests_and_tasks_for_build(url):
@@ -240,6 +245,8 @@ def get_sub_dirs(url):
         str_response = response.readall().decode('utf-8')
         obj = json.loads(str_response)
         subdirs = obj['subdirs']
+        print("Got subdirs: %s" % subdirs)
+        subdirs = sorted(subdirs, key=int, reverse=True)
         print("found subdirs %s" % subdirs)
     except (urllib.request.HTTPError, ValueError) as e:
         return "failure: %s" % str(e)
@@ -368,3 +375,48 @@ def add_new_generic_test(url, testname):
         add_new_application_test(url)
     else:
         print("Unknown test: '%s', skipping" % testname)
+
+
+def get_buildlist():
+    return Build.objects.distinct().order_by('-start_date', '-build_no')
+
+
+def sync_quick():
+    lock.acquire()
+    try:
+        get_sub_dirs('%s/builds' % settings.BGO_URL)
+    except Exception:
+        message = traceback.format_exc().splitlines()
+        print('sync_quick: Error: %s' % message)
+    finally:
+        lock.release()
+
+
+def sync_builds_date(year, month=None, day=None):
+    start_url = None
+    if month:
+        if day:
+            start_url = '%s/builds/%s/%s/%s' % (settings.BGO_URL, year, month, day)
+        else:
+            start_url = '%s/builds/%s/%s' % (settings.BGO_URL, year, month)
+    else:
+        start_url = '%s/builds/%s' % (settings.BGO_URL, year)
+    print("Syncing builds starting from '%s'" % start_url)
+    get_sub_dirs(start_url)
+
+
+def sync_build(year, month, day, build_no):
+    buildname = '{0:4}{1:02}{2:02}.{3}'.format(int(year), int(month), int(day), int(build_no))
+
+    print("Syncing build '%s'" % buildname)
+    build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
+    print(build_url)
+
+
+def sync_test(year, month, day, build_no, test_name):
+    buildname = '{0:4}{1:02}{2:02}.{3}'.format(int(year), int(month), int(day), int(build_no))
+    print("Syncing test '%s' from build %s" % (test_name, buildname))
+
+    build_url = "%s/builds/%s/%s/%s/%s" % (settings.BGO_URL, year, month, day, build_no)
+    if is_test_exists(build_url, test_name):
+        add_new_generic_test(build_url, test_name)
