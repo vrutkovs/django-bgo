@@ -25,7 +25,8 @@ class Build(models.Model):
         return 'smoketest' in tests
 
     def has_failed_tasks(self):
-        task_results = Task.objects.filter(build=self).values_list("success", flat=True)
+        task_results = Task.objects.filter(build=self).exclude(name__contains='smoketest').\
+            values_list("success", flat=True)
         return False in task_results
 
 
