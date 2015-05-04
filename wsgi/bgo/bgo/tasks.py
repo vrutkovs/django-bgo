@@ -25,7 +25,7 @@ es = Elasticsearch([url])
 
 
 def fetch_tests_and_tasks_for_build(url):
-    completed = None
+    completed = True
     for testname in known_tests:
         if not is_test_exists(url, testname):
             result = create_test_for_build(testname, url)
@@ -248,16 +248,17 @@ def add_new_build(url):
     start_date = datetime.datetime(year, month, day)
     print('start date: %s' % start_date)
     b, created = Build.objects.get_or_create(name=build_name, start_date=start_date, build_no=build_no)
-    tmp_completed = fetch_tests_and_tasks_for_build(url)
-    if tmp_completed:
-        print("Build task state changed, updating build.completed")
-        b.completed = tmp_completed
-        b.save()
 
     if created:
         payload = {'name': build_name, 'date': start_date}
         print(payload)
         es.index(index="builds", doc_type='build', id=url, body=payload)
+
+    tmp_completed = fetch_tests_and_tasks_for_build(url)
+    if tmp_completed:
+        print("Build task state changed, updating build.completed")
+        b.completed = tmp_completed
+        b.save()
 
     return b.completed
 
@@ -270,6 +271,7 @@ def get_sub_dirs(url, quick=False):
     try:
         response = urllib.request.urlopen('%s/snapshot.json' % url)
         completed = add_new_build(url)
+        print("Build completed: %s" % completed)
         if completed and quick:
             print("Found existing build, so stopping sync")
             sys.exit(0)
