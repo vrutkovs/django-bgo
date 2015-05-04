@@ -13,24 +13,27 @@ known_tests = ['applicationstest', 'integrationtest']
 
 
 def fetch_tests_and_tasks_for_build(url):
-    completed = False
+    completed = None
     for testname in known_tests:
         if not is_test_exists(url, testname):
             result = create_test_for_build(testname, url)
-            completed &= result
+            if result:
+                completed = result
         else:
             print("Test %s for %s already exists" % (url, testname))
 
     for task in known_tasks:
         if not is_task_exists(url, task):
             result = create_task_for_build(task, url)
-            completed &= result
+            if result:
+                completed = result
 
             if task == 'resolve':
-                result = sync_commits_for_build(url)
-                completed &= result
+                sync_commits_for_build(url)
         else:
             print("Task %s for %s already exists" % (url, task))
+
+    return completed
 
 
 def is_test_exists(url, testname):
@@ -80,10 +83,10 @@ def create_test_for_build(testname, url):
         return True
     except urllib.request.HTTPError as e:
         print("not a test: %s" % e)
-        return True
+        return None
     except ValueError as e:
         print("Malformed JSON: %s" % e)
-        return
+        return None
 
 
 def get_url_template_for_src(src):
@@ -138,10 +141,10 @@ def sync_commits_for_build(url):
         return True
     except urllib.request.HTTPError as e:
         print("no commits found: %s" % e)
-        return True
+        return None
     except ValueError as e:
         print("Malformed JSON: %s" % e)
-        return
+        return None
 
 
 def create_task_for_build(taskname, url):
@@ -173,9 +176,10 @@ def create_task_for_build(taskname, url):
         return True
     except urllib.request.HTTPError as e:
         print("not a task: %s" % e)
-        return True
+        return None
     except ValueError as e:
         print("Malformed JSON: %s" % e)
+        return None
 
 
 def get_build_info_from_url(url):
@@ -211,14 +215,11 @@ def add_new_build(url):
     start_date = datetime.datetime(year, month, day)
     print('start date: %s' % start_date)
     b, created = Build.objects.get_or_create(name=build_name, start_date=start_date, build_no=build_no)
-    print("Build created")
-    if created:
-        print("Build created, fetching tests")
-    elif not b.completed:
-        print("Build is not completed, updating tests")
-    else:
-        print("Build is completed, skipping tests info")
-    b.completed = fetch_tests_and_tasks_for_build(url)
+    tmp_completed = fetch_tests_and_tasks_for_build(url)
+    if tmp_completed:
+        print("Build task state changed, updating build.completed")
+        b.completed = tmp_completed
+        b.save()
 
 
 def get_sub_dirs(url):
