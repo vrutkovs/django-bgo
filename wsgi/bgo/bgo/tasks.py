@@ -7,6 +7,7 @@ import datetime
 import threading
 import traceback
 import os
+import sys
 from string import Template
 
 
@@ -42,7 +43,7 @@ def fetch_tests_and_tasks_for_build(url):
             if task == 'resolve':
                 sync_commits_for_build(url)
         else:
-            print("Task %s for %s already exists" % (url, task))
+            print("Task %s for %s already exists" % (task, url))
 
     return completed
 
@@ -257,7 +258,7 @@ def add_new_build(url):
         print(payload)
         es.index(index="builds", doc_type='build', id=url, body=payload)
 
-    return created
+    return b.completed
 
 
 def get_sub_dirs(url, quick=False):
@@ -267,10 +268,10 @@ def get_sub_dirs(url, quick=False):
     # If snapshot.json exists, add a new build
     try:
         response = urllib.request.urlopen('%s/snapshot.json' % url)
-        created = add_new_build(url)
-        if not created and quick:
+        completed = add_new_build(url)
+        if completed and quick:
             print("Found existing build, so stopping sync")
-            return
+            sys.exit(0)
     except urllib.request.HTTPError as e:
         print("not a build")
 
