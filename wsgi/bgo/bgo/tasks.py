@@ -268,8 +268,8 @@ def get_sub_dirs(url, quick=False):
         response = urllib.request.urlopen('%s/snapshot.json' % url)
         completed = add_new_build(url)
         print("Build completed: %s" % completed)
-        if completed and quick:
-            print("Found existing build, so stopping sync")
+        if completed and quick and is_test_exists(url, 'integrationtest'):
+            print("Found a completed build with integrationtest, stopping sync")
             sys.exit(0)
     except urllib.request.HTTPError as e:
         print("not a build")
