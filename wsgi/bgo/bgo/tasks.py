@@ -6,6 +6,7 @@ import json
 import datetime
 import threading
 import traceback
+import os
 from string import Template
 
 
@@ -15,6 +16,11 @@ known_tasks = ['resolve', 'build', 'builddisks', 'smoketest', 'smoketest-classic
 known_tests = ['applicationstest', 'integrationtest']
 
 lock = threading.Lock()
+
+# Connect to ES
+url = os.environ['BONSAI_URL']
+from elasticsearch import Elasticsearch
+es = Elasticsearch([url])
 
 
 def fetch_tests_and_tasks_for_build(url):
@@ -84,6 +90,13 @@ def create_test_for_build(testname, url):
             duration=duration, success=success)
         print("test was created")
 
+        if created:
+            payload = {
+                'name': testname, 'date': start_date, 'build': build,
+                'duration': int(duration), 'success': success}
+            print(payload)
+            es.index(index="tests", doc_type='test', id=t.id, body=payload)
+
         add_new_generic_test(url, testname)
         return True
     except urllib.request.HTTPError as e:
@@ -140,6 +153,12 @@ def sync_commits_for_build(url):
                             build=build, component=component, sha=commit_sha,
                             message=message, change_type=change_type, url=url)
                         print("Added commit %s" % commit_sha)
+                        if created:
+                            payload = {
+                                'component': component, 'sha': commit_sha, 'build': build,
+                                'message': message, 'change_type': change_type, 'url': url}
+                            print(payload)
+                            es.index(index="commits", doc_type='commit', id=t.id, body=payload)
                 except Exception as e:
                     print("Malformed commit record")
 
@@ -177,6 +196,13 @@ def create_task_for_build(taskname, url):
         t, created = Task.objects.get_or_create(
             build=build, name=taskname, start_date=start_date,
             duration=duration, success=success, status=status)
+        if created:
+            sec = datetime.timedelta(minutes=duration.minute, seconds=duration.second).seconds
+            payload = {
+                'name': taskname, 'date': start_date, 'build': build.id,
+                'duration': sec, 'success': success}
+            print(payload)
+            es.index(index="tests", doc_type='test', id=t.id, body=payload)
         print("task was created, success=%s" % success)
         return True
     except urllib.request.HTTPError as e:
@@ -225,6 +251,11 @@ def add_new_build(url):
         print("Build task state changed, updating build.completed")
         b.completed = tmp_completed
         b.save()
+
+    if created:
+        payload = {'name': build_name, 'date': start_date}
+        print(payload)
+        es.index(index="builds", doc_type='build', id=url, body=payload)
 
     return created
 
@@ -288,6 +319,11 @@ def add_new_installed_test(url):
             tr, created = TestResult.objects.get_or_create(
                 test=test, name=name, component=component, result=result[value])
             print("added test result for %s:%s - %s" % (component, name, value))
+            if created:
+                payload = {
+                    'name': name, 'test': test.id, 'component': component, 'result': result[value]}
+                print(payload)
+                es.index(index="test_results", doc_type='test_result', id=tr.id, body=payload)
 
         test.success = total_success
         test.save()
@@ -367,6 +403,11 @@ def add_new_application_test(url):
 
         tr, created = TestResult.objects.get_or_create(
             test=test, name=app['id'], component='Applications', result=result[app['state']])
+        if created:
+            payload = {
+                'name': app['id'], 'test': test.id, 'component': 'Applications', 'result': result[app['state']]}
+            print(payload)
+            es.index(index="test_results", doc_type='test_result', id=tr.id, body=payload)
         print("added test result for %s: %s" % (app['id'], app['state']))
 
     test.success = success and total_success

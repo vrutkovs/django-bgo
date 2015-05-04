@@ -9,6 +9,7 @@ packages = ['Django==1.7',
             'psycopg2==2.5.4',
             'static3',
             'django_pdb',
+            'elasticsearch',
             'django-bootstrap3']
 
 if 'REDISCLOUD_URL' in os.environ and 'REDISCLOUD_PORT' in os.environ and 'REDISCLOUD_PASSWORD' in os.environ:
