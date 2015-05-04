@@ -150,15 +150,15 @@
                 </li>
                 {% for tmp_build in buildslist %}
                     {% if build and build.id == tmp_build.id %}
-                    <div class="list-group-item list-group-item-info">
+                        <div class="list-group-item list-group-item-info">
                     {% elif tmp_build.has_failed_tasks %}
-                    <div class="list-group-item list-group-item-warning">
+                        <div class="list-group-item list-group-item-danger">
                     {% else %}
-                    <div class="list-group-item">
+                        <div class="list-group-item">
                     {% endif %}
 
                     <a 
-                    {% if not tmp_build.has_smoketests %}
+                    {% if not tmp_build.has_smoketests and not tmp_build.has_failed_tasks %}
                         class="text-muted"
                     {% endif %} 
                            href="/{{ tmp_build.name }}/{{remainder}}">{{ tmp_build.name }}</a>
