@@ -264,7 +264,7 @@ def add_new_build(url):
 
 
 def get_sub_dirs(url, quick=False):
-    print("get_sub_dirs(%s)" % url)
+    print("get_sub_dirs(%s, quick=%s)" % (url, quick))
 
     print("checking build %s " % url)
     # If snapshot.json exists, add a new build
@@ -293,7 +293,7 @@ def get_sub_dirs(url, quick=False):
 
     # Iterate over subdirs
     for subdir in subdirs:
-        get_sub_dirs("%s/%s" % (url, subdir))
+        get_sub_dirs("%s/%s" % (url, subdir), quick)
 
     return "success"
 
