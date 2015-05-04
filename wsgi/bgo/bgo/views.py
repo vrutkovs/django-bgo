@@ -43,7 +43,7 @@ class BuildDetailView(BuildsListView):
     def get_queryset(self):
         self.build = get_object_or_404(Build, name=self.args[0])
         self.tests = Test.objects.filter(build=self.build)
-        self.tasks = Task.objects.filter(build=self.build)
+        self.tasks = Task.objects.filter(build=self.build).order_by('start_date')
         self.task_names = self.tasks.values_list('name', flat=True)
         self.commits = Commit.objects.filter(build=self.build)
 
