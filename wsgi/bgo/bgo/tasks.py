@@ -90,7 +90,7 @@ def create_test_for_build(testname, url):
         if created:
             sec = datetime.timedelta(minutes=duration.minute, seconds=duration.second).seconds
             payload = {
-                'name': testname, '@timestamp': start_date, 'build_url': build.build_url(),
+                'name': testname, '@timestamp': start_date, 'build': build.id,
                 'duration': sec, 'success': success}
             print(payload)
             es.index(index="tests", doc_type='test', id=t.id, body=payload)
@@ -153,7 +153,7 @@ def sync_commits_for_build(url):
                         print("Added commit %s" % commit_sha)
                         if created:
                             payload = {
-                                'component': component, 'sha': commit_sha, 'build': build,
+                                'component': component, 'sha': commit_sha, 'build': build.id,
                                 'message': message, 'change_type': change_type, 'url': url}
                             print(payload)
                             es.index(index="commits", doc_type='commit', id=t.id, body=payload)
@@ -197,7 +197,7 @@ def create_task_for_build(taskname, url):
         if created:
             sec = datetime.timedelta(minutes=duration.minute, seconds=duration.second).seconds
             payload = {
-                'name': taskname, 'date': start_date, 'build_url': build.build_url(),
+                'name': taskname, 'date': start_date, 'build': build.id,
                 'duration': sec, 'success': success}
             print(payload)
             es.index(index="tests", doc_type='test', id=t.id, body=payload)
@@ -248,7 +248,7 @@ def add_new_build(url):
     if created:
         payload = {'name': build_name, 'date': start_date}
         print(payload)
-        es.index(index="builds", doc_type='build', id=url, body=payload)
+        es.index(index="builds", doc_type='build', id=b.id, body=payload)
 
     tmp_completed = fetch_tests_and_tasks_for_build(url)
     if tmp_completed:
